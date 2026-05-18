@@ -3,7 +3,7 @@
 ## Prices
 - call `getRecentBars(symbol, timeframe, count)` when asked for a price or price history, where `symbol` is the trading symbol (e.g. "EURUSD"), `timeframe` is the timeframe constant (e.g. PERIOD_M1), and `count` is the number of recent bars to retrieve (e.g. 1). Only request the number of bars that you actually need, which unless specified otherwise, is typically 1 for the most recent price.
 
-## Timeframe
+## MQL5 Timeframe
 - the 1-Minute timeframe: 1
 - the 5-Minute timeframe: 5
 - the 15-Minute timeframe: 15
@@ -13,3 +13,14 @@
 - the daily timeframe: 16408
 - the weekly timeframe: 32769
 - the monthly timeframe: 49153
+
+## MQL4 Timeframe
+- the 1-Minute timeframe: 1
+- the 5-Minute timeframe: 5
+- the 15-Minute timeframe: 15
+- the 30-Minute timeframe: 30
+- the 1-Hour timeframe: 60
+- the 4-Hour timeframe: 240
+- the daily timeframe: 1440
+- the weekly timeframe: 10080
+- the monthly timeframe: 43200
