@@ -9,6 +9,12 @@ The Assistant can:
 - Get current and historical price data
 - Get account information and trading history
 
+## Requirements
+- Windows or Linux operating system
+- MetaTrader 4 or MetaTrader 5
+- Python 3.9.7 or higher
+- OpenAI API key
+
 ## Installation
 
 ### Python
