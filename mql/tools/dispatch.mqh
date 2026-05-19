@@ -21,6 +21,8 @@ ENUM_TIMEFRAMES StringToTimeframe(string tf)
    if (tf == "PERIOD_H1")  return PERIOD_H1;
    if (tf == "PERIOD_H4")  return PERIOD_H4;
    if (tf == "PERIOD_D1")  return PERIOD_D1;
+   if (tf == "PERIOD_W1")  return PERIOD_W1;
+   if (tf == "PERIOD_MN1") return PERIOD_MN1;
    return PERIOD_CURRENT;
 }
 
