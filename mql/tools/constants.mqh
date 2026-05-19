@@ -180,6 +180,24 @@ Tool TOOL_GET_RISK(
    toolGetRiskParams()
 );
 //+------------------------------------------------------------------+
+//| Parameters for get_screenshot                                    |
+//+------------------------------------------------------------------+
+Parameters *toolGetScreenshotParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",    "string", "The trading symbol to retrieve information for", false));
+   p.add(new Property("timeframe", "string", "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", false));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get screenshot tool                                              |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_SCREENSHOT(
+   "get_screenshot",
+   "Screenshot a chart, optionally switch to symbol/timeframe.",
+   toolGetScreenshotParams()
+);
+//+------------------------------------------------------------------+
 //| Parameters for get_symbol_info                                   |
 //+------------------------------------------------------------------+
 Parameters *toolGetSymbolInfoParams(void)

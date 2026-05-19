@@ -62,6 +62,7 @@ public:
       add(new Tool("get_positions",        "Get all open positions, optionally filtered by symbol.",           toolGetPositionsParams()));
       add(new Tool("get_recent_bars",      "Get recent OHLCV bars for a specific symbol and timeframe.",       toolGetRecentBarsParams()));
       add(new Tool("get_risk",             "Calculate the lot size based on a percentage risk and stop loss in pips.", toolGetRiskParams()));
+      add(new Tool("get_screenshot",        "Screenshot a chart, optionally switch to symbol/timeframe first.", toolGetScreenshotParams()));
       add(new Tool("get_symbol_info",      "Get symbol information such as bid, ask, spread, etc.",           toolGetSymbolInfoParams()));
       add(new Tool("iClose",               "Get the close price of a specific historical bar.",               toolIBarParams()));
       add(new Tool("iDate",                "Get the date and time of a specific historical bar.",             toolIBarParams()));
@@ -107,6 +108,7 @@ public:
       if (name == "get_positions")         return getPositions(json["symbol"].ToStr());
       if (name == "get_recent_bars")       return getRecentBars(json["symbol"].ToStr(), StringToTimeframe(json["timeframe"].ToStr()), (int)json["number_of_bars"].ToInt(), (int)json["shift"].ToInt());
       if (name == "get_risk")              return DoubleToString(getRisk(json["symbol"].ToStr(), json["percent_risk"].ToDbl(), json["stop_loss_pips"].ToDbl()));
+      if (name == "get_screenshot")        return getScreenshot(json["symbol"].ToStr(), StringToTimeframe(json["timeframe"].ToStr()));
       if (name == "get_symbol_info")       return getSymbolInfo(json["symbol"].ToStr());
       if (name == "iClose")                return DoubleToString(iClose(json["symbol"].ToStr(), StringToTimeframe(json["timeframe"].ToStr()), (int)json["shift"].ToInt()));
       if (name == "iDate")                 return TimeToString(iTime(json["symbol"].ToStr(), StringToTimeframe(json["timeframe"].ToStr()), (int)json["shift"].ToInt()));

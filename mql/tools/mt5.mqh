@@ -25,6 +25,10 @@ static CPositionInfo posi;
 #define CONTAINS(symbol, match) (StringFind(symbol, match) != -1)
 #define DIVISION(numerator, denominator) (denominator == 0 ? 0 : numerator / denominator)
 
+#define SCREENSHOT_FILENAME "metatrader-ai"
+#define SCREENSHOT_HEIGHT 800
+#define SCREENSHOT_WIDTH 600
+
 // forwards (in mql4 is shows import warning)
 #ifdef __MQL5__
 string getAccountInfo();
@@ -37,6 +41,7 @@ string getPosition(ulong ticket);
 string getPositions(string symbol = "");
 string getRecentBars(string symbol, ENUM_TIMEFRAMES timeframe, int numberOfBars, int shift = 0);
 double getRisk(string symbol, double percentRisk, double stopLossPips);
+string getScreenshot(string symbol = "", ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT);
 string getSymbolInfo(string symbol);
 bool isOrderOpened(string symbol = "", long magic = 0);
 bool isPositionOpened(string symbol = "", long magic = 0);
@@ -481,6 +486,51 @@ double getRisk(string symbol, double percentRisk, double stopLossPips)
           :
           NormalizeDouble((riskCurrent), 2);
 
+}
+
+//+------------------------------------------------------------------+
+//| Screenshot a chart, optionally switch to symbol/timeframe        |
+//+------------------------------------------------------------------+
+string getScreenshot(string symbol = "", ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT)
+{
+   ResetLastError();
+// switch chart if sym/tf is set but we're not on there
+   if((symbol != "" && ChartSymbol() != symbol) || (timeframe != PERIOD_CURRENT && ChartPeriod() != timeframe))
+   {
+      if(!ChartSetSymbolPeriod(ChartID(), symbol, timeframe))
+      {
+         PrintFormat("getScreenshot(%s,%d) failed to set symbol/period. Error %d", symbol, timeframe, GetLastError());
+         return "";
+      }
+   }
+// take screenshot
+   const string currencyPair = symbol != "" ? symbol : _Symbol;
+   if(!ChartScreenShot(ChartID(), SCREENSHOT_FILENAME + " " + currencyPair + ".png", SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH))
+   {
+      PrintFormat("getScreenshot(%s,%d) failed to screenshot. Error %d", currencyPair, timeframe, GetLastError());
+      return "";
+   }
+// load screenshot into array
+   int res;
+   char file[];
+   if (SCREENSHOT_FILENAME + " " + currencyPair + ".png" != NULL && SCREENSHOT_FILENAME + " " + currencyPair + ".png" != "")
+   {
+      res = FileOpen(SCREENSHOT_FILENAME + " " + currencyPair + ".png", FILE_READ | FILE_BIN);
+      if (res < 0)
+      {
+         PrintFormat("getScreenshot(%s,%d) failed to open screenshot file. Error %d", currencyPair, timeframe, GetLastError());
+         return "";
+      }
+
+      if (FileReadArray(res, file) != FileSize(res))
+      {
+         FileClose(res);
+         PrintFormat("getScreenshot(%s,%d) failed to read screenshot file. Error %d", currencyPair, timeframe, GetLastError());
+         return "";
+      }
+      FileClose(res);
+   }
+   return CharArrayToString(file);
 }
 
 //+------------------------------------------------------------------+
