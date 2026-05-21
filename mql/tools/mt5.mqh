@@ -10,13 +10,9 @@
 #include "JSON.mqh"
 
 #ifdef __MQL5__
-#include <Trade\SymbolInfo.mqh>
 #include <Trade\Trade.mqh>
-#include <Trade\AccountInfo.mqh>
-static CTrade trade;
-static CAccountInfo acc;
-static CSymbolInfo smb;
-static CPositionInfo posi;
+static CTrade mt5Trade;
+static CPositionInfo mt5Posi;
 #else
 #define POSITION_TYPE_BUY  0 // OP_BUY
 #define POSITION_TYPE_SELL 1 // OP_SELL
@@ -46,7 +42,7 @@ string getSymbolInfo(string symbol);
 bool isOrderOpened(string symbol = "", long magic = 0);
 bool isPositionOpened(string symbol = "", long magic = 0);
 bool orderDelete(ulong ticket);
-bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoploss, double takeprofit, string comment = "", long magic = 0);
+bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stopLoss, double takeProfit, string comment = "", long magic = 0);
 bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoplossPips, double takeprofitPips, string comment = "", long magic = 0);
 bool orderModify(ulong ticket, double price, double stopLoss, double takeProfit);
 bool positionClose(ulong ticket);
@@ -331,18 +327,18 @@ string getPosition(ulong ticket)
 #ifdef __MQL5__
    for(int i = PositionsTotal() - 1; i >= 0; i--) //count backwards
    {
-      if(posi.SelectByIndex(i) && posi.Ticket() == ticket) // select the order
+      if(mt5Posi.SelectByIndex(i) && mt5Posi.Ticket() == ticket) // select the order
       {
-         result["magic"]         = posi.Magic();
-         result["symbol"]        = posi.Symbol();
-         result["type"]          = (int)posi.PositionType();
-         result["comment"]       = posi.Comment();
-         result["stop_loss"]     = posi.StopLoss();
-         result["take_profit"]   = posi.TakeProfit();
-         result["lot_size"]      = posi.Volume();
-         result["price_open"]    = posi.PriceOpen();
-         result["price_current"] = posi.PriceCurrent();
-         result["time_open"]     = TimeToString(posi.Time());
+         result["magic"]         = mt5Posi.Magic();
+         result["symbol"]        = mt5Posi.Symbol();
+         result["type"]          = (int)mt5Posi.PositionType();
+         result["comment"]       = mt5Posi.Comment();
+         result["stop_loss"]     = mt5Posi.StopLoss();
+         result["take_profit"]   = mt5Posi.TakeProfit();
+         result["lot_size"]      = mt5Posi.Volume();
+         result["price_open"]    = mt5Posi.PriceOpen();
+         result["price_current"] = mt5Posi.PriceCurrent();
+         result["time_open"]     = TimeToString(mt5Posi.Time());
          break;
       }
    }
@@ -381,21 +377,21 @@ string getPositions(string symbol = "")
 #ifdef __MQL5__
    for(int i = PositionsTotal() - 1; i >= 0; i--)
    {
-      if(!posi.SelectByIndex(i)) continue;
-      if(symbol != "" && posi.Symbol() != symbol) continue;
-      result["positions"][count]["ticket"]        = (long)posi.Ticket();
-      result["positions"][count]["magic_number"]  = posi.Magic();
-      result["positions"][count]["symbol"]        = posi.Symbol();
-      result["positions"][count]["type"]          = (int)posi.PositionType();
-      result["positions"][count]["comment"]       = posi.Comment();
-      result["positions"][count]["stop_loss"]     = posi.StopLoss();
-      result["positions"][count]["take_profit"]   = posi.TakeProfit();
-      result["positions"][count]["lot_size"]      = posi.Volume();
-      result["positions"][count]["open_price"]    = posi.PriceOpen();
-      result["positions"][count]["current_price"] = posi.PriceCurrent();
-      result["positions"][count]["profit"]        = posi.Profit();
-      result["positions"][count]["swap"]          = posi.Swap();
-      result["positions"][count]["time_open"]     = TimeToString(posi.Time());
+      if(!mt5Posi.SelectByIndex(i)) continue;
+      if(symbol != "" && mt5Posi.Symbol() != symbol) continue;
+      result["positions"][count]["ticket"]        = (long)mt5Posi.Ticket();
+      result["positions"][count]["magic_number"]  = mt5Posi.Magic();
+      result["positions"][count]["symbol"]        = mt5Posi.Symbol();
+      result["positions"][count]["type"]          = (int)mt5Posi.PositionType();
+      result["positions"][count]["comment"]       = mt5Posi.Comment();
+      result["positions"][count]["stop_loss"]     = mt5Posi.StopLoss();
+      result["positions"][count]["take_profit"]   = mt5Posi.TakeProfit();
+      result["positions"][count]["lot_size"]      = mt5Posi.Volume();
+      result["positions"][count]["open_price"]    = mt5Posi.PriceOpen();
+      result["positions"][count]["current_price"] = mt5Posi.PriceCurrent();
+      result["positions"][count]["profit"]        = mt5Posi.Profit();
+      result["positions"][count]["swap"]          = mt5Posi.Swap();
+      result["positions"][count]["time_open"]     = TimeToString(mt5Posi.Time());
       count++;
    }
 #else
@@ -590,10 +586,10 @@ bool isPositionOpened(string symbol = "", long magic = 0)
 #ifdef __MQL5__
    for(int i = PositionsTotal() - 1; i >= 0; i--) //count backwards
    {
-      if(posi.SelectByIndex(i)) // select the order
+      if(mt5Posi.SelectByIndex(i)) // select the order
       {
-         bool isSymbol = symbol == "" || posi.Symbol() == symbol;
-         bool isMagic  = magic == 0 || posi.Magic() == magic;
+         bool isSymbol = symbol == "" || mt5Posi.Symbol() == symbol;
+         bool isMagic  = magic == 0 || mt5Posi.Magic() == magic;
          if(isSymbol && isMagic) return true;
       }
    }
@@ -624,7 +620,7 @@ bool orderDelete(ulong ticket)
       ulong orderTicket = OrderGetTicket(i);
       if(OrderSelect(orderTicket)) // select the order
       {
-         return trade.OrderDelete(ticket);
+         return mt5Trade.OrderDelete(ticket);
       }
    }
 #else
@@ -645,11 +641,11 @@ bool orderDelete(ulong ticket)
 //+------------------------------------------------------------------+
 //| Send an order: absolute entry, stop-loss, and take-profit prices |
 //+------------------------------------------------------------------+
-bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoploss, double takeprofit, string comment = "", long magic = 0)
+bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stopLoss, double takeProfit, string comment = "", long magic = 0)
 {
    double _price = price;
 #ifdef __MQL5__
-   trade.SetExpertMagicNumber(magic);
+   mt5Trade.SetExpertMagicNumber(magic);
    if(price == 0)
    {
       _price = type == ORDER_TYPE_BUY ? SymbolInfoDouble(symbol, SYMBOL_ASK) : SymbolInfoDouble(symbol, SYMBOL_BID);
@@ -658,16 +654,16 @@ bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price,
    {
    case ORDER_TYPE_BUY:
    case ORDER_TYPE_SELL:
-      return trade.PositionOpen(symbol, type, volume, _price, stoploss, takeprofit, comment);
+      return mt5Trade.PositionOpen(symbol, type, volume, _price, stopLoss, takeProfit, comment);
    default:
-      return trade.OrderOpen(symbol, type, volume, price, price, stoploss, takeprofit, ORDER_TIME_GTC, 0, comment);
+      return mt5Trade.OrderOpen(symbol, type, volume, price, price, stopLoss, takeProfit, ORDER_TIME_GTC, 0, comment);
    }
 #else
    if(price == 0)
    {
       _price = type == OP_BUY ? SymbolInfoDouble(symbol, SYMBOL_ASK) : SymbolInfoDouble(symbol, SYMBOL_BID);
    }
-   return OrderSend(symbol, type, volume, _price, slippage, stoploss, takeprofit, comment, (int)magic, 0) > 0;
+   return OrderSend(symbol, type, volume, _price, slippage, stopLoss, takeProfit, comment, (int)magic, 0) > 0;
 #endif
    return false;
 }
@@ -686,7 +682,7 @@ bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double pr
    {
       _price = type == ORDER_TYPE_BUY ? SymbolInfoDouble(symbol, SYMBOL_ASK) : SymbolInfoDouble(symbol, SYMBOL_BID);
    }
-   trade.SetExpertMagicNumber(magic);
+   mt5Trade.SetExpertMagicNumber(magic);
    switch(type)
    {
    case ORDER_TYPE_BUY_LIMIT:
@@ -694,21 +690,21 @@ bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double pr
    case ORDER_TYPE_BUY_STOP_LIMIT:
       stopLoss = _price - stoplossPips * pipValue;
       takeProfit = _price + takeprofitPips * pipValue;
-      return trade.OrderOpen(symbol, type, volume, _price, _price, stopLoss, takeProfit, ORDER_TIME_GTC, 0, comment);
+      return mt5Trade.OrderOpen(symbol, type, volume, _price, _price, stopLoss, takeProfit, ORDER_TIME_GTC, 0, comment);
    case ORDER_TYPE_BUY:
       stopLoss = _price - stoplossPips * pipValue;
       takeProfit = _price + takeprofitPips * pipValue;
-      return trade.PositionOpen(symbol, type, volume, _price, stopLoss, takeProfit, comment);
+      return mt5Trade.PositionOpen(symbol, type, volume, _price, stopLoss, takeProfit, comment);
    case ORDER_TYPE_SELL_LIMIT:
    case ORDER_TYPE_SELL_STOP:
    case ORDER_TYPE_SELL_STOP_LIMIT:
       stopLoss = _price + stoplossPips * pipValue;
       takeProfit = _price - takeprofitPips * pipValue;
-      return trade.OrderOpen(symbol, type, volume, _price, _price, stopLoss, takeProfit, ORDER_TIME_GTC, 0, comment);
+      return mt5Trade.OrderOpen(symbol, type, volume, _price, _price, stopLoss, takeProfit, ORDER_TIME_GTC, 0, comment);
    case ORDER_TYPE_SELL:
       stopLoss = _price + stoplossPips * pipValue;
       takeProfit = _price - takeprofitPips * pipValue;
-      return trade.PositionOpen(symbol, type, volume, _price, stopLoss, takeProfit, comment);
+      return mt5Trade.PositionOpen(symbol, type, volume, _price, stopLoss, takeProfit, comment);
    default:
       break;
    }
@@ -750,7 +746,7 @@ bool orderModify(ulong ticket, double price, double stopLoss, double takeProfit)
       ulong orderTicket = OrderGetTicket(i);
       if(OrderSelect(orderTicket)) // select the order
       {
-         return trade.OrderModify(
+         return mt5Trade.OrderModify(
                    ticket,
                    price,
                    stopLoss,
@@ -783,11 +779,11 @@ bool positionClose(ulong ticket)
 #ifdef __MQL5__
    for(int i = PositionsTotal() - 1; i >= 0; i--) //count backwards
    {
-      if(posi.SelectByIndex(i)) // select the order
+      if(mt5Posi.SelectByIndex(i)) // select the order
       {
-         if(posi.Ticket() == ticket)
+         if(mt5Posi.Ticket() == ticket)
          {
-            return trade.PositionClose(ticket);
+            return mt5Trade.PositionClose(ticket);
          }
       }
    }
@@ -812,7 +808,7 @@ bool positionClose(ulong ticket)
 bool positionModify(string symbol, ulong ticket, double stopLoss, double takeProfit)
 {
 #ifdef __MQL5__
-   return trade.PositionModify(ticket, stopLoss, takeProfit);
+   return mt5Trade.PositionModify(ticket, stopLoss, takeProfit);
 #else
    for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
    {
