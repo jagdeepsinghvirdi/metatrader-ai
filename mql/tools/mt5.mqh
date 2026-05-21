@@ -10,12 +10,8 @@
 #include "JSON.mqh"
 
 #ifdef __MQL5__
-#include <Trade\SymbolInfo.mqh>
 #include <Trade\Trade.mqh>
-#include <Trade\AccountInfo.mqh>
 static CTrade trade;
-static CAccountInfo acc;
-static CSymbolInfo smb;
 static CPositionInfo posi;
 #else
 #define POSITION_TYPE_BUY  0 // OP_BUY
