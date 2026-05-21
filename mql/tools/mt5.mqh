@@ -42,7 +42,7 @@ string getSymbolInfo(string symbol);
 bool isOrderOpened(string symbol = "", long magic = 0);
 bool isPositionOpened(string symbol = "", long magic = 0);
 bool orderDelete(ulong ticket);
-bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoploss, double takeprofit, string comment = "", long magic = 0);
+bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stopLoss, double takeProfit, string comment = "", long magic = 0);
 bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoplossPips, double takeprofitPips, string comment = "", long magic = 0);
 bool orderModify(ulong ticket, double price, double stopLoss, double takeProfit);
 bool positionClose(ulong ticket);
@@ -641,7 +641,7 @@ bool orderDelete(ulong ticket)
 //+------------------------------------------------------------------+
 //| Send an order: absolute entry, stop-loss, and take-profit prices |
 //+------------------------------------------------------------------+
-bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoploss, double takeprofit, string comment = "", long magic = 0)
+bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stopLoss, double takeProfit, string comment = "", long magic = 0)
 {
    double _price = price;
 #ifdef __MQL5__
@@ -654,16 +654,16 @@ bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price,
    {
    case ORDER_TYPE_BUY:
    case ORDER_TYPE_SELL:
-      return trade.PositionOpen(symbol, type, volume, _price, stoploss, takeprofit, comment);
+      return trade.PositionOpen(symbol, type, volume, _price, stopLoss, takeProfit, comment);
    default:
-      return trade.OrderOpen(symbol, type, volume, price, price, stoploss, takeprofit, ORDER_TIME_GTC, 0, comment);
+      return trade.OrderOpen(symbol, type, volume, price, price, stopLoss, takeProfit, ORDER_TIME_GTC, 0, comment);
    }
 #else
    if(price == 0)
    {
       _price = type == OP_BUY ? SymbolInfoDouble(symbol, SYMBOL_ASK) : SymbolInfoDouble(symbol, SYMBOL_BID);
    }
-   return OrderSend(symbol, type, volume, _price, slippage, stoploss, takeprofit, comment, (int)magic, 0) > 0;
+   return OrderSend(symbol, type, volume, _price, slippage, stopLoss, takeProfit, comment, (int)magic, 0) > 0;
 #endif
    return false;
 }
