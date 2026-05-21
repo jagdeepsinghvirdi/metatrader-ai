@@ -7,7 +7,7 @@
 #property link      "https://www.jblanked.com/"
 #property strict
 // from https://github.com/jblanked/MQL-Library/blob/main/Include/JB-Requests.mqh
-#include <metatrader-ai/mql/tools/JSON.mqh>
+#include "JSON.mqh"
 class CRequests
 {
    private:

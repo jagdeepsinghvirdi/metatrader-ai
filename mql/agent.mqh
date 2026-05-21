@@ -7,10 +7,10 @@
 #property link      "https://www.jblanked.com/"
 #property strict
 
-#include <metatrader-ai/mql/tools/mt5.mqh>
-#include <metatrader-ai/mql/tools/dispatch.mqh>
-#include <metatrader-ai/mql/tools/requests.mqh>
-#include <metatrader-ai/mql/secrets.mqh>
+#include "tools/mt5.mqh"
+#include "tools/dispatch.mqh"
+#include "tools/requests.mqh"
+#include "secrets.mqh"
 
 #define MODEL "gpt-5-nano"
 #define URL   "https://api.openai.com/v1/chat/completions"
