@@ -7,7 +7,7 @@
 #property link      "https://www.jblanked.com/"
 #property strict
 
-#include <metatrader-ai/mql/tools/tool.mqh>
+#include "tool.mqh"
 
 //+------------------------------------------------------------------+
 //| Account info tool                                                |

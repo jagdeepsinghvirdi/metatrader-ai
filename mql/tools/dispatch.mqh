@@ -6,8 +6,8 @@
 #property copyright "Copyright 2026,JBlanked"
 #property link      "https://www.jblanked.com/"
 #property strict
-#include <metatrader-ai/mql/tools/constants.mqh>
-#include <metatrader-ai/mql/tools/mt5.mqh>
+#include "constants.mqh"
+#include "mt5.mqh"
 
 #define BOOL_TO_STRING(value) ((value) ? "true" : "false")
 //+------------------------------------------------------------------+

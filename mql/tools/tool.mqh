@@ -7,7 +7,7 @@
 #property link      "https://www.jblanked.com/"
 #property strict
 
-#include <metatrader-ai/mql/tools/JSON.mqh>
+#include "JSON.mqh"
 
 //+------------------------------------------------------------------+
 //| Property — describes a single property of a tool                 |
