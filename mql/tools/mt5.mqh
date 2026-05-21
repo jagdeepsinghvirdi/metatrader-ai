@@ -28,26 +28,26 @@ static CPositionInfo mt5Posi;
 // forwards (in mql4 is shows import warning)
 #ifdef __MQL5__
 string getAccountInfo();
-string getHistoryPosition(ulong ticket);
-string getHistoryPositions(string symbol = "", long magic = 0, datetime fromDate = 0, datetime toDate = 0);
-string getOrder(ulong ticket);
-string getOrders(string symbol = "");
-double getPipValue(string symbol);
-string getPosition(ulong ticket);
-string getPositions(string symbol = "");
-string getRecentBars(string symbol, ENUM_TIMEFRAMES timeframe, int numberOfBars, int shift = 0);
-double getRisk(string symbol, double percentRisk, double stopLossPips);
-string getScreenshot(string symbol = "", ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT);
-string getSymbolInfo(string symbol);
-bool isOrderOpened(string symbol = "", long magic = 0);
-bool isPositionOpened(string symbol = "", long magic = 0);
-bool orderDelete(ulong ticket);
-bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stopLoss, double takeProfit, string comment = "", long magic = 0);
-bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoplossPips, double takeprofitPips, string comment = "", long magic = 0);
-bool orderModify(ulong ticket, double price, double stopLoss, double takeProfit);
-bool positionClose(ulong ticket);
-bool positionModify(string symbol, ulong ticket, double stopLoss, double takeProfit);
-bool selectSymbol(string symbol, bool enable = true);
+string getHistoryPosition(const ulong ticket);
+string getHistoryPositions(const string symbol = "", const long magic = 0, const datetime fromDate = 0, const datetime toDate = 0);
+string getOrder(const ulong ticket);
+string getOrders(const string symbol = "");
+double getPipValue(const string symbol);
+string getPosition(const ulong ticket);
+string getPositions(const string symbol = "");
+string getRecentBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const int numberOfBars, const int shift = 0);
+double getRisk(const string symbol, const double percentRisk, const double stopLossPips);
+string getScreenshot(const string symbol = "", const ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT);
+string getSymbolInfo(const string symbol);
+bool isOrderOpened(const string symbol = "", const long magic = 0);
+bool isPositionOpened(const string symbol = "", const long magic = 0);
+bool orderDelete(const ulong ticket);
+bool orderSend(const string symbol, ENUM_ORDER_TYPE type, const double volume, const double price, const int slippage, const double stopLoss, const double takeProfit, const string comment = "", const long magic = 0);
+bool orderSendPips(const string symbol, ENUM_ORDER_TYPE type, const double volume, const double price, const int slippage, const double stoplossPips, const double takeprofitPips, const string comment = "", const long magic = 0);
+bool orderModify(const ulong ticket, const double price, const double stopLoss, const double takeProfit);
+bool positionClose(const ulong ticket);
+bool positionModify(const string symbol, const ulong ticket, const double stopLoss, const double takeProfit);
+bool selectSymbol(const string symbol, const bool enable = true);
 #endif
 //+------------------------------------------------------------------+
 
@@ -73,7 +73,7 @@ string getAccountInfo(void)
 //+------------------------------------------------------------------+
 //| Get all deals related to the ticket number of a closed position  |
 //+------------------------------------------------------------------+
-string getHistoryPosition(ulong ticket)
+string getHistoryPosition(const ulong ticket)
 {
    CJAVal result;
 #ifdef __MQL5__
@@ -120,7 +120,7 @@ string getHistoryPosition(ulong ticket)
 //+------------------------------------------------------------------+
 //| Get historical positions, optionally filtered                    |
 //+------------------------------------------------------------------+
-string getHistoryPositions(string symbol = "", long magic = 0, datetime fromDate = 0, datetime toDate = 0)
+string getHistoryPositions(const string symbol = "", const long magic = 0, const datetime fromDate = 0, const datetime toDate = 0)
 {
    CJAVal result;
    int count = 0;
@@ -182,7 +182,7 @@ string getHistoryPositions(string symbol = "", long magic = 0, datetime fromDate
 //+------------------------------------------------------------------+
 //| Get a specific pending order by ticket number                    |
 //+------------------------------------------------------------------+
-string getOrder(ulong ticket)
+string getOrder(const ulong ticket)
 {
    CJAVal result;
 #ifdef __MQL5__
@@ -222,7 +222,7 @@ string getOrder(ulong ticket)
 //+------------------------------------------------------------------+
 //| Get all pending orders, optionally filtered by symbol            |
 //+------------------------------------------------------------------+
-string getOrders(string symbol = "")
+string getOrders(const string symbol = "")
 {
    CJAVal result;
    int count = 0;
@@ -274,7 +274,7 @@ string getOrders(string symbol = "")
 //+------------------------------------------------------------------+
 //| Get the pip value for a specific symbol                          |
 //+------------------------------------------------------------------+
-double getPipValue(string symbol)
+double getPipValue(const string symbol)
 {
    const double _pips = SymbolInfoDouble(symbol, SYMBOL_POINT) * 10;
    const double digits = int(SymbolInfoInteger(symbol, SYMBOL_DIGITS));
@@ -308,7 +308,7 @@ double getPipValue(string symbol)
 //+------------------------------------------------------------------+
 //| Get a specific open position by ticket number                    |
 //+------------------------------------------------------------------+
-string getPosition(ulong ticket)
+string getPosition(const ulong ticket)
 {
    CJAVal result;
 #ifdef __MQL5__
@@ -346,7 +346,7 @@ string getPosition(ulong ticket)
 //+------------------------------------------------------------------+
 //| Get all open positions, optionally filtered by symbol            |
 //+------------------------------------------------------------------+
-string getPositions(string symbol = "")
+string getPositions(const string symbol = "")
 {
    CJAVal result;
    int count = 0;
@@ -398,7 +398,7 @@ string getPositions(string symbol = "")
 //+------------------------------------------------------------------+
 //| Get recent bars for a specific symbol, timeframe, and shift      |
 //+------------------------------------------------------------------+
-string getRecentBars(string symbol, ENUM_TIMEFRAMES timeframe, int numberOfBars, int shift = 0)
+string getRecentBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const int numberOfBars, const int shift = 0)
 {
    CJAVal result;
    MqlRates rates[];
@@ -423,7 +423,7 @@ string getRecentBars(string symbol, ENUM_TIMEFRAMES timeframe, int numberOfBars,
 //+------------------------------------------------------------------+
 //| Get the lot size based on the percentage risk + stop loss in pips|
 //+------------------------------------------------------------------+
-double getRisk(string symbol, double percentRisk, double stopLossPips)
+double getRisk(const string symbol, const double percentRisk, const double stopLossPips)
 {
    const double decimalRisk = percentRisk / 100;   // turn user input into risk %
    const double accountRisk = AccountInfoDouble(ACCOUNT_EQUITY) * decimalRisk; // define total risk
@@ -463,7 +463,7 @@ double getRisk(string symbol, double percentRisk, double stopLossPips)
 //+------------------------------------------------------------------+
 //| Screenshot a chart, optionally switch to symbol/timeframe        |
 //+------------------------------------------------------------------+
-string getScreenshot(string symbol = "", ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT)
+string getScreenshot(const string symbol = "", const ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT)
 {
    ResetLastError();
 // switch chart if sym/tf is set but we're not on there
@@ -508,7 +508,7 @@ string getScreenshot(string symbol = "", ENUM_TIMEFRAMES timeframe = PERIOD_CURR
 //+------------------------------------------------------------------+
 //| Get symbol information for a specific symbol                     |
 //+------------------------------------------------------------------+
-string getSymbolInfo(string symbol)
+string getSymbolInfo(const string symbol)
 {
    CJAVal result;
    result["tick_value"]   = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE);
@@ -526,7 +526,7 @@ string getSymbolInfo(string symbol)
 //+------------------------------------------------------------------+
 //| Check if there are any pending order opened                      |
 //+------------------------------------------------------------------+
-bool isOrderOpened(string symbol = "", long magic = 0)
+bool isOrderOpened(const string symbol = "", const long magic = 0)
 {
 #ifdef __MQL5__
    for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
@@ -557,7 +557,7 @@ bool isOrderOpened(string symbol = "", long magic = 0)
 //+------------------------------------------------------------------+
 //| Check if there are any open positions                            |
 //+------------------------------------------------------------------+
-bool isPositionOpened(string symbol = "", long magic = 0)
+bool isPositionOpened(const string symbol = "", const long magic = 0)
 {
 #ifdef __MQL5__
    for(int i = PositionsTotal() - 1; i >= 0; i--) //count backwards
@@ -588,7 +588,7 @@ bool isPositionOpened(string symbol = "", long magic = 0)
 //+------------------------------------------------------------------+
 //| Delete a pending order by ticket number                          |
 //+------------------------------------------------------------------+
-bool orderDelete(ulong ticket)
+bool orderDelete(const ulong ticket)
 {
 #ifdef __MQL5__
    return mt5Trade.OrderDelete(ticket);
@@ -600,7 +600,7 @@ bool orderDelete(ulong ticket)
 //+------------------------------------------------------------------+
 //| Send an order: absolute entry, stop-loss, and take-profit prices |
 //+------------------------------------------------------------------+
-bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stopLoss, double takeProfit, string comment = "", long magic = 0)
+bool orderSend(const string symbol, const ENUM_ORDER_TYPE type, const double volume, const double price, const int slippage, const double stopLoss, const double takeProfit, const string comment = "", const long magic = 0)
 {
    double _price = price;
 #ifdef __MQL5__
@@ -630,7 +630,7 @@ bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price,
 //+------------------------------------------------------------------+
 //| Send an order: entry, stop-loss, and take-profit  in pips        |
 //+------------------------------------------------------------------+
-bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoplossPips, double takeprofitPips, string comment = "", long magic = 0)
+bool orderSendPips(const string symbol, const ENUM_ORDER_TYPE type, const double volume, const double price, const int slippage, const double stoplossPips, const double takeprofitPips, const string comment = "", const long magic = 0)
 {
    const double pipValue = getPipValue(symbol);
    double _price = price;
@@ -697,7 +697,7 @@ bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double pr
 //+------------------------------------------------------------------+
 //| Modify an existing pending order                                 |
 //+------------------------------------------------------------------+
-bool orderModify(ulong ticket, double price, double stopLoss, double takeProfit)
+bool orderModify(const ulong ticket, const double price, const double stopLoss, const double takeProfit)
 {
 #ifdef __MQL5__
    if(!OrderSelect(ticket)) return false;
@@ -718,7 +718,7 @@ bool orderModify(ulong ticket, double price, double stopLoss, double takeProfit)
 //+------------------------------------------------------------------+
 //| Close an open position by ticket number                          |
 //+------------------------------------------------------------------+
-bool positionClose(ulong ticket)
+bool positionClose(const ulong ticket)
 {
 #ifdef __MQL5__
    return mt5Trade.PositionClose(ticket);
@@ -731,7 +731,7 @@ bool positionClose(ulong ticket)
 //+------------------------------------------------------------------+
 //| Modify an existing open position                                 |
 //+------------------------------------------------------------------+
-bool positionModify(string symbol, ulong ticket, double stopLoss, double takeProfit)
+bool positionModify(const string symbol, const ulong ticket, const double stopLoss, const double takeProfit)
 {
 #ifdef __MQL5__
    return mt5Trade.PositionModify(ticket, stopLoss, takeProfit);
@@ -744,7 +744,7 @@ bool positionModify(string symbol, ulong ticket, double stopLoss, double takePro
 //+------------------------------------------------------------------+
 //| Ensure the specified symbol is enabled/disabled in Market Watch  |
 //+------------------------------------------------------------------+
-bool selectSymbol(string symbol, bool enable = true)
+bool selectSymbol(const string symbol, const bool enable = true)
 {
    return SymbolSelect(symbol, enable);
 }
