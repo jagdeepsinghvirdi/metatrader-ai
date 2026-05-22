@@ -104,7 +104,7 @@ public:
       m_messages.m_type = jtARRAY;
       m_dispatch        = new Dispatch();
       m_requests.url    = URL;
-      m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + API_KEY;
+      m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
       m_initialized     = false;
 
       if(!FolderCreate("metatrader-ai", FILE_COMMON)) Print("Failed to create metatrader-ai folder");

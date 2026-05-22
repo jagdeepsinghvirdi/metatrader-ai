@@ -10,7 +10,7 @@ PROJECT_DIR = os.path.dirname(BASE_DIR)
 MODEL = "gpt-5-nano"
 URL = "https://api.openai.com/v1/chat/completions"
 HEADERS = {
-    "Authorization": f"Bearer {secrets.API_KEY}",
+    "Authorization": f"Bearer {secrets.OPENAI_API_KEY}",
     "Content-Type": "application/json",
 }
 
