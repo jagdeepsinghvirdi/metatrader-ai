@@ -28,26 +28,26 @@ static CPositionInfo mt5Posi;
 // forwards (in mql4 is shows import warning)
 #ifdef __MQL5__
 string getAccountInfo();
-string getHistoryPosition(ulong ticket);
-string getHistoryPositions(string symbol = "", long magic = 0, datetime fromDate = 0, datetime toDate = 0);
-string getOrder(ulong ticket);
-string getOrders(string symbol = "");
-double getPipValue(string symbol);
-string getPosition(ulong ticket);
-string getPositions(string symbol = "");
-string getRecentBars(string symbol, ENUM_TIMEFRAMES timeframe, int numberOfBars, int shift = 0);
-double getRisk(string symbol, double percentRisk, double stopLossPips);
-string getScreenshot(string symbol = "", ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT);
-string getSymbolInfo(string symbol);
-bool isOrderOpened(string symbol = "", long magic = 0);
-bool isPositionOpened(string symbol = "", long magic = 0);
-bool orderDelete(ulong ticket);
-bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stopLoss, double takeProfit, string comment = "", long magic = 0);
-bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoplossPips, double takeprofitPips, string comment = "", long magic = 0);
-bool orderModify(ulong ticket, double price, double stopLoss, double takeProfit);
-bool positionClose(ulong ticket);
-bool positionModify(string symbol, ulong ticket, double stopLoss, double takeProfit);
-bool selectSymbol(string symbol, bool enable = true);
+string getHistoryPosition(const ulong ticket);
+string getHistoryPositions(const string symbol = "", const long magic = 0, const datetime fromDate = 0, const datetime toDate = 0);
+string getOrder(const ulong ticket);
+string getOrders(const string symbol = "");
+double getPipValue(const string symbol);
+string getPosition(const ulong ticket);
+string getPositions(const string symbol = "");
+string getRecentBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const int numberOfBars, const int shift = 0);
+double getRisk(const string symbol, const double percentRisk, const double stopLossPips);
+string getScreenshot(const string symbol = "", const ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT);
+string getSymbolInfo(const string symbol);
+bool isOrderOpened(const string symbol = "", const long magic = 0);
+bool isPositionOpened(const string symbol = "", const long magic = 0);
+bool orderDelete(const ulong ticket);
+bool orderSend(const string symbol, ENUM_ORDER_TYPE type, const double volume, const double price, const int slippage, const double stopLoss, const double takeProfit, const string comment = "", const long magic = 0);
+bool orderSendPips(const string symbol, ENUM_ORDER_TYPE type, const double volume, const double price, const int slippage, const double stoplossPips, const double takeprofitPips, const string comment = "", const long magic = 0);
+bool orderModify(const ulong ticket, const double price, const double stopLoss, const double takeProfit);
+bool positionClose(const ulong ticket);
+bool positionModify(const string symbol, const ulong ticket, const double stopLoss, const double takeProfit);
+bool selectSymbol(const string symbol, const bool enable = true);
 #endif
 //+------------------------------------------------------------------+
 
@@ -73,7 +73,7 @@ string getAccountInfo(void)
 //+------------------------------------------------------------------+
 //| Get all deals related to the ticket number of a closed position  |
 //+------------------------------------------------------------------+
-string getHistoryPosition(ulong ticket)
+string getHistoryPosition(const ulong ticket)
 {
    CJAVal result;
 #ifdef __MQL5__
@@ -120,7 +120,7 @@ string getHistoryPosition(ulong ticket)
 //+------------------------------------------------------------------+
 //| Get historical positions, optionally filtered                    |
 //+------------------------------------------------------------------+
-string getHistoryPositions(string symbol = "", long magic = 0, datetime fromDate = 0, datetime toDate = 0)
+string getHistoryPositions(const string symbol = "", const long magic = 0, const datetime fromDate = 0, const datetime toDate = 0)
 {
    CJAVal result;
    int count = 0;
@@ -182,51 +182,38 @@ string getHistoryPositions(string symbol = "", long magic = 0, datetime fromDate
 //+------------------------------------------------------------------+
 //| Get a specific pending order by ticket number                    |
 //+------------------------------------------------------------------+
-string getOrder(ulong ticket)
+string getOrder(const ulong ticket)
 {
    CJAVal result;
 #ifdef __MQL5__
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
+   if(OrderSelect(ticket))
    {
-      const ulong orderTicket = OrderGetTicket(i);
-      if(OrderSelect(orderTicket) && orderTicket == ticket)
-      {
-         result["magic"]         = OrderGetInteger(ORDER_MAGIC);
-         result["symbol"]        = OrderGetString(ORDER_SYMBOL);
-         result["type"]          = OrderGetInteger(ORDER_TYPE);
-         result["comment"]       = OrderGetString(ORDER_COMMENT);
-         result["stop_loss"]     = OrderGetDouble(ORDER_SL);
-         result["take_profit"]   = OrderGetDouble(ORDER_TP);
-         result["lot_size"]      = OrderGetDouble(ORDER_VOLUME_CURRENT);
-         result["price_open"]    = OrderGetDouble(ORDER_PRICE_OPEN);
-         result["price_current"] = OrderGetDouble(ORDER_PRICE_CURRENT);
-         result["time_open"]     = TimeToString((datetime)OrderGetInteger(ORDER_TIME_SETUP));
-         result["time_expire"]   = TimeToString((datetime)OrderGetInteger(ORDER_TIME_EXPIRATION));
-         break;
-      }
+      result["magic"]         = OrderGetInteger(ORDER_MAGIC);
+      result["symbol"]        = OrderGetString(ORDER_SYMBOL);
+      result["type"]          = OrderGetInteger(ORDER_TYPE);
+      result["comment"]       = OrderGetString(ORDER_COMMENT);
+      result["stop_loss"]     = OrderGetDouble(ORDER_SL);
+      result["take_profit"]   = OrderGetDouble(ORDER_TP);
+      result["lot_size"]      = OrderGetDouble(ORDER_VOLUME_CURRENT);
+      result["price_open"]    = OrderGetDouble(ORDER_PRICE_OPEN);
+      result["price_current"] = OrderGetDouble(ORDER_PRICE_CURRENT);
+      result["time_open"]     = TimeToString((datetime)OrderGetInteger(ORDER_TIME_SETUP));
+      result["time_expire"]   = TimeToString((datetime)OrderGetInteger(ORDER_TIME_EXPIRATION));
    }
 #else
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
+   if(OrderSelect((int)ticket, SELECT_BY_TICKET)) // select the order
    {
-      if(OrderSelect(i, SELECT_BY_POS)) // select the order
-      {
-         if((OrderType() == OP_BUYSTOP || OrderType() == OP_SELLSTOP || OrderType() == OP_BUYLIMIT || OrderType() == OP_SELLLIMIT) &&
-               OrderTicket() == ticket)
-         {
-            result["magic"]         = OrderMagicNumber();
-            result["symbol"]        = OrderSymbol();
-            result["type"]          = OrderType();
-            result["comment"]       = OrderComment();
-            result["stop_loss"]     = OrderStopLoss();
-            result["take_profit"]   = OrderTakeProfit();
-            result["lot_size"]      = OrderLots();
-            result["price_open"]    = OrderOpenPrice();
-            result["price_current"] = OrderClosePrice();
-            result["time_open"]     = TimeToString((datetime)OrderOpenTime());
-            result["time_expire"]   = TimeToString((datetime)OrderExpiration());
-            break;
-         }
-      }
+      result["magic"]         = OrderMagicNumber();
+      result["symbol"]        = OrderSymbol();
+      result["type"]          = OrderType();
+      result["comment"]       = OrderComment();
+      result["stop_loss"]     = OrderStopLoss();
+      result["take_profit"]   = OrderTakeProfit();
+      result["lot_size"]      = OrderLots();
+      result["price_open"]    = OrderOpenPrice();
+      result["price_current"] = OrderClosePrice();
+      result["time_open"]     = TimeToString((datetime)OrderOpenTime());
+      result["time_expire"]   = TimeToString((datetime)OrderExpiration());
    }
 #endif
    return result.Serialize();
@@ -235,7 +222,7 @@ string getOrder(ulong ticket)
 //+------------------------------------------------------------------+
 //| Get all pending orders, optionally filtered by symbol            |
 //+------------------------------------------------------------------+
-string getOrders(string symbol = "")
+string getOrders(const string symbol = "")
 {
    CJAVal result;
    int count = 0;
@@ -287,7 +274,7 @@ string getOrders(string symbol = "")
 //+------------------------------------------------------------------+
 //| Get the pip value for a specific symbol                          |
 //+------------------------------------------------------------------+
-double getPipValue(string symbol)
+double getPipValue(const string symbol)
 {
    const double _pips = SymbolInfoDouble(symbol, SYMBOL_POINT) * 10;
    const double digits = int(SymbolInfoInteger(symbol, SYMBOL_DIGITS));
@@ -321,47 +308,36 @@ double getPipValue(string symbol)
 //+------------------------------------------------------------------+
 //| Get a specific open position by ticket number                    |
 //+------------------------------------------------------------------+
-string getPosition(ulong ticket)
+string getPosition(const ulong ticket)
 {
    CJAVal result;
 #ifdef __MQL5__
-   for(int i = PositionsTotal() - 1; i >= 0; i--) //count backwards
+   if(mt5Posi.SelectByTicket(ticket)) // select the order
    {
-      if(mt5Posi.SelectByIndex(i) && mt5Posi.Ticket() == ticket) // select the order
-      {
-         result["magic"]         = mt5Posi.Magic();
-         result["symbol"]        = mt5Posi.Symbol();
-         result["type"]          = (int)mt5Posi.PositionType();
-         result["comment"]       = mt5Posi.Comment();
-         result["stop_loss"]     = mt5Posi.StopLoss();
-         result["take_profit"]   = mt5Posi.TakeProfit();
-         result["lot_size"]      = mt5Posi.Volume();
-         result["price_open"]    = mt5Posi.PriceOpen();
-         result["price_current"] = mt5Posi.PriceCurrent();
-         result["time_open"]     = TimeToString(mt5Posi.Time());
-         break;
-      }
+      result["magic"]         = mt5Posi.Magic();
+      result["symbol"]        = mt5Posi.Symbol();
+      result["type"]          = (int)mt5Posi.PositionType();
+      result["comment"]       = mt5Posi.Comment();
+      result["stop_loss"]     = mt5Posi.StopLoss();
+      result["take_profit"]   = mt5Posi.TakeProfit();
+      result["lot_size"]      = mt5Posi.Volume();
+      result["price_open"]    = mt5Posi.PriceOpen();
+      result["price_current"] = mt5Posi.PriceCurrent();
+      result["time_open"]     = TimeToString(mt5Posi.Time());
    }
 #else
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
+   if(OrderSelect((int)ticket, SELECT_BY_TICKET)) // select the order
    {
-      if(OrderSelect(i, SELECT_BY_POS)) // select the order
-      {
-         if(OrderTicket() == ticket && (OrderType() == OP_BUY || OrderType() == OP_SELL))
-         {
-            result["magic"]         = OrderMagicNumber();
-            result["symbol"]        = OrderSymbol();
-            result["type"]          = OrderType();
-            result["comment"]       = OrderComment();
-            result["stop_loss"]     = OrderStopLoss();
-            result["take_profit"]   = OrderTakeProfit();
-            result["lot_size"]      = OrderLots();
-            result["price_open"]    = OrderOpenPrice();
-            result["price_current"] = OrderClosePrice();
-            result["time_open"]     = TimeToString((datetime)OrderOpenTime());
-            break;
-         }
-      }
+      result["magic"]         = OrderMagicNumber();
+      result["symbol"]        = OrderSymbol();
+      result["type"]          = OrderType();
+      result["comment"]       = OrderComment();
+      result["stop_loss"]     = OrderStopLoss();
+      result["take_profit"]   = OrderTakeProfit();
+      result["lot_size"]      = OrderLots();
+      result["price_open"]    = OrderOpenPrice();
+      result["price_current"] = OrderClosePrice();
+      result["time_open"]     = TimeToString((datetime)OrderOpenTime());
    }
 #endif
    return result.Serialize();
@@ -370,7 +346,7 @@ string getPosition(ulong ticket)
 //+------------------------------------------------------------------+
 //| Get all open positions, optionally filtered by symbol            |
 //+------------------------------------------------------------------+
-string getPositions(string symbol = "")
+string getPositions(const string symbol = "")
 {
    CJAVal result;
    int count = 0;
@@ -422,7 +398,7 @@ string getPositions(string symbol = "")
 //+------------------------------------------------------------------+
 //| Get recent bars for a specific symbol, timeframe, and shift      |
 //+------------------------------------------------------------------+
-string getRecentBars(string symbol, ENUM_TIMEFRAMES timeframe, int numberOfBars, int shift = 0)
+string getRecentBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const int numberOfBars, const int shift = 0)
 {
    CJAVal result;
    MqlRates rates[];
@@ -447,7 +423,7 @@ string getRecentBars(string symbol, ENUM_TIMEFRAMES timeframe, int numberOfBars,
 //+------------------------------------------------------------------+
 //| Get the lot size based on the percentage risk + stop loss in pips|
 //+------------------------------------------------------------------+
-double getRisk(string symbol, double percentRisk, double stopLossPips)
+double getRisk(const string symbol, const double percentRisk, const double stopLossPips)
 {
    const double decimalRisk = percentRisk / 100;   // turn user input into risk %
    const double accountRisk = AccountInfoDouble(ACCOUNT_EQUITY) * decimalRisk; // define total risk
@@ -487,7 +463,7 @@ double getRisk(string symbol, double percentRisk, double stopLossPips)
 //+------------------------------------------------------------------+
 //| Screenshot a chart, optionally switch to symbol/timeframe        |
 //+------------------------------------------------------------------+
-string getScreenshot(string symbol = "", ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT)
+string getScreenshot(const string symbol = "", const ENUM_TIMEFRAMES timeframe = PERIOD_CURRENT)
 {
    ResetLastError();
 // switch chart if sym/tf is set but we're not on there
@@ -532,7 +508,7 @@ string getScreenshot(string symbol = "", ENUM_TIMEFRAMES timeframe = PERIOD_CURR
 //+------------------------------------------------------------------+
 //| Get symbol information for a specific symbol                     |
 //+------------------------------------------------------------------+
-string getSymbolInfo(string symbol)
+string getSymbolInfo(const string symbol)
 {
    CJAVal result;
    result["tick_value"]   = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE);
@@ -550,7 +526,7 @@ string getSymbolInfo(string symbol)
 //+------------------------------------------------------------------+
 //| Check if there are any pending order opened                      |
 //+------------------------------------------------------------------+
-bool isOrderOpened(string symbol = "", long magic = 0)
+bool isOrderOpened(const string symbol = "", const long magic = 0)
 {
 #ifdef __MQL5__
    for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
@@ -581,7 +557,7 @@ bool isOrderOpened(string symbol = "", long magic = 0)
 //+------------------------------------------------------------------+
 //| Check if there are any open positions                            |
 //+------------------------------------------------------------------+
-bool isPositionOpened(string symbol = "", long magic = 0)
+bool isPositionOpened(const string symbol = "", const long magic = 0)
 {
 #ifdef __MQL5__
    for(int i = PositionsTotal() - 1; i >= 0; i--) //count backwards
@@ -612,36 +588,19 @@ bool isPositionOpened(string symbol = "", long magic = 0)
 //+------------------------------------------------------------------+
 //| Delete a pending order by ticket number                          |
 //+------------------------------------------------------------------+
-bool orderDelete(ulong ticket)
+bool orderDelete(const ulong ticket)
 {
 #ifdef __MQL5__
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
-   {
-      ulong orderTicket = OrderGetTicket(i);
-      if(OrderSelect(orderTicket)) // select the order
-      {
-         return mt5Trade.OrderDelete(ticket);
-      }
-   }
+   return mt5Trade.OrderDelete(ticket);
 #else
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
-   {
-      if(OrderSelect(i, SELECT_BY_POS)) // select the order
-      {
-         if(OrderTicket() == (int)ticket && OrderType() != OP_BUY && OrderType() != OP_SELL)
-         {
-            return OrderDelete(OrderTicket());
-         }
-      }
-   }
+   return OrderDelete((int)ticket);
 #endif
-   return false;
 }
 
 //+------------------------------------------------------------------+
 //| Send an order: absolute entry, stop-loss, and take-profit prices |
 //+------------------------------------------------------------------+
-bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stopLoss, double takeProfit, string comment = "", long magic = 0)
+bool orderSend(const string symbol, const ENUM_ORDER_TYPE type, const double volume, const double price, const int slippage, const double stopLoss, const double takeProfit, const string comment = "", const long magic = 0)
 {
    double _price = price;
 #ifdef __MQL5__
@@ -671,7 +630,7 @@ bool orderSend(string symbol, ENUM_ORDER_TYPE type, double volume, double price,
 //+------------------------------------------------------------------+
 //| Send an order: entry, stop-loss, and take-profit  in pips        |
 //+------------------------------------------------------------------+
-bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double price, int slippage, double stoplossPips, double takeprofitPips, string comment = "", long magic = 0)
+bool orderSendPips(const string symbol, const ENUM_ORDER_TYPE type, const double volume, const double price, const int slippage, const double stoplossPips, const double takeprofitPips, const string comment = "", const long magic = 0)
 {
    const double pipValue = getPipValue(symbol);
    double _price = price;
@@ -738,96 +697,54 @@ bool orderSendPips(string symbol, ENUM_ORDER_TYPE type, double volume, double pr
 //+------------------------------------------------------------------+
 //| Modify an existing pending order                                 |
 //+------------------------------------------------------------------+
-bool orderModify(ulong ticket, double price, double stopLoss, double takeProfit)
+bool orderModify(const ulong ticket, const double price, const double stopLoss, const double takeProfit)
 {
 #ifdef __MQL5__
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
-   {
-      ulong orderTicket = OrderGetTicket(i);
-      if(OrderSelect(orderTicket)) // select the order
-      {
-         return mt5Trade.OrderModify(
-                   ticket,
-                   price,
-                   stopLoss,
-                   takeProfit,
-                   (ENUM_ORDER_TYPE_TIME)OrderGetInteger(ORDER_TYPE_TIME),
-                   OrderGetInteger(ORDER_TIME_EXPIRATION)
-                );
-      }
-   }
+   if(!OrderSelect(ticket)) return false;
+   return mt5Trade.OrderModify(
+             ticket,
+             price,
+             stopLoss,
+             takeProfit,
+             (ENUM_ORDER_TYPE_TIME)OrderGetInteger(ORDER_TYPE_TIME),
+             OrderGetInteger(ORDER_TIME_EXPIRATION)
+          );
 #else
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
-   {
-      if(OrderSelect(i, SELECT_BY_POS)) // select the order
-      {
-         if(OrderTicket() == (int)ticket && OrderType() != OP_BUY && OrderType() != OP_SELL)
-         {
-            return OrderModify((int)ticket, price, stopLoss, takeProfit, OrderExpiration()) > 0;
-         }
-      }
-   }
+   if(!OrderSelect((int)ticket, SELECT_BY_TICKET)) return false;
+   return OrderModify((int)ticket, price, stopLoss, takeProfit, OrderExpiration()) > 0;
 #endif
-   return false;
 }
 
 //+------------------------------------------------------------------+
 //| Close an open position by ticket number                          |
 //+------------------------------------------------------------------+
-bool positionClose(ulong ticket)
+bool positionClose(const ulong ticket)
 {
 #ifdef __MQL5__
-   for(int i = PositionsTotal() - 1; i >= 0; i--) //count backwards
-   {
-      if(mt5Posi.SelectByIndex(i)) // select the order
-      {
-         if(mt5Posi.Ticket() == ticket)
-         {
-            return mt5Trade.PositionClose(ticket);
-         }
-      }
-   }
+   return mt5Trade.PositionClose(ticket);
 #else
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
-   {
-      if(OrderSelect(i, SELECT_BY_POS)) // select the order
-      {
-         if(OrderTicket() == (int)ticket && (OrderType() == OP_BUY || OrderType() == OP_SELL))
-         {
-            return OrderClose(OrderTicket(), OrderLots(), OrderClosePrice(), 10) > 0 ? true : false;
-         }
-      }
-   }
+   if(!OrderSelect((int)ticket, SELECT_BY_TICKET)) return false;
+   return OrderClose(OrderTicket(), OrderLots(), OrderClosePrice(), 10) > 0 ? true : false;
 #endif
-   return false;
 }
 
 //+------------------------------------------------------------------+
 //| Modify an existing open position                                 |
 //+------------------------------------------------------------------+
-bool positionModify(string symbol, ulong ticket, double stopLoss, double takeProfit)
+bool positionModify(const string symbol, const ulong ticket, const double stopLoss, const double takeProfit)
 {
 #ifdef __MQL5__
    return mt5Trade.PositionModify(ticket, stopLoss, takeProfit);
 #else
-   for(int i = OrdersTotal() - 1; i >= 0; i--) //count backwards
-   {
-      if(OrderSelect(i, SELECT_BY_POS)) // select the order
-      {
-         if(OrderTicket() == (int)ticket && (OrderType() == OP_BUY || OrderType() == OP_SELL))
-         {
-            return OrderModify((int)ticket, OrderOpenPrice(), stopLoss, takeProfit, OrderExpiration()) > 0;
-         }
-      }
-   }
+   if(!OrderSelect((int)ticket, SELECT_BY_TICKET)) return false;
+   return OrderModify((int)ticket, OrderOpenPrice(), stopLoss, takeProfit, OrderExpiration()) > 0;
 #endif
-   return false;
 }
 
 //+------------------------------------------------------------------+
 //| Ensure the specified symbol is enabled/disabled in Market Watch  |
 //+------------------------------------------------------------------+
-bool selectSymbol(string symbol, bool enable = true)
+bool selectSymbol(const string symbol, const bool enable = true)
 {
    return SymbolSelect(symbol, enable);
 }
