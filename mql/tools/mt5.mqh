@@ -13,9 +13,6 @@
 #include <Trade\Trade.mqh>
 static CTrade mt5Trade;
 static CPositionInfo mt5Posi;
-#else
-#define POSITION_TYPE_BUY  0 // OP_BUY
-#define POSITION_TYPE_SELL 1 // OP_SELL
 #endif
 
 #define CONTAINS(symbol, match) (StringFind(symbol, match) != -1)
