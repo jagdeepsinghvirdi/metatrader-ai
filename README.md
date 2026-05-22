@@ -81,6 +81,7 @@ touch secrets.mqh
 #define OPENAI_API_KEY "your_openai_api_key"
 ```
 Or define `OPENAI_API_KEY` in your own code before including the `agent.mqh` file.
+
 7. Open up MetaTrader and you should see the `metatrader-ai` folder in the Navigator under Include. You can now include the `agent.mqh` file in your MQL scripts to use the AI functions:
 ```c++
 #include <metatrader-ai/mql/agent.mqh>
