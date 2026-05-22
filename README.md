@@ -39,7 +39,7 @@ touch secrets.py
 ```
 3. Open `secrets.py` and add your OpenAI API key, Account Number, Account Password, and Broker Server Name:
 ```py
-API_KEY = "your_openai_api_key"
+OPENAI_API_KEY = "your_openai_api_key"
 ACCOUNT_NUMBER = 123456
 ACCOUNT_PASSWORD = "your_account_password"
 BROKER_SERVER_NAME = "your_broker_server"
@@ -76,13 +76,11 @@ ni secrets.mqh
 ```bash
 touch secrets.mqh
 ```
-6. Add your OpenAI API key, Account Number, Account Password, and Broker Server Name:
+6. Add your OpenAI API key to the `secrets.mqh` file:
 ```c++
-#define API_KEY "your_openai_api_key"
-#define ACCOUNT_NUMBER 123456
-#define ACCOUNT_PASSWORD "your_account_password"
-#define BROKER_SERVER_NAME "your_broker_server"
+#define OPENAI_API_KEY "your_openai_api_key"
 ```
+Or define `OPENAI_API_KEY` in your own code before including the `agent.mqh` file.
 7. Open up MetaTrader and you should see the `metatrader-ai` folder in the Navigator under Include. You can now include the `agent.mqh` file in your MQL scripts to use the AI functions:
 ```c++
 #include <metatrader-ai/mql/agent.mqh>

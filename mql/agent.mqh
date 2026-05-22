@@ -10,7 +10,10 @@
 #include "tools/mt5.mqh"
 #include "tools/dispatch.mqh"
 #include "tools/requests.mqh"
+
+#ifndef OPENAI_API_KEY
 #include "secrets.mqh"
+#endif
 
 #define MODEL "gpt-5-nano"
 #define URL   "https://api.openai.com/v1/chat/completions"
@@ -104,7 +107,7 @@ public:
       m_messages.m_type = jtARRAY;
       m_dispatch        = new Dispatch();
       m_requests.url    = URL;
-      m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + API_KEY;
+      m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
       m_initialized     = false;
 
       if(!FolderCreate("metatrader-ai", FILE_COMMON)) Print("Failed to create metatrader-ai folder");
