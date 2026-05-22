@@ -10,7 +10,10 @@
 #include "tools/mt5.mqh"
 #include "tools/dispatch.mqh"
 #include "tools/requests.mqh"
+
+#ifndef OPENAI_API_KEY
 #include "secrets.mqh"
+#endif
 
 #define MODEL "gpt-5-nano"
 #define URL   "https://api.openai.com/v1/chat/completions"
