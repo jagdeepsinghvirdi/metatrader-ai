@@ -47,8 +47,10 @@ private:
    Dispatch *m_dispatch;    // tool dispatcher
    CRequests m_requests;    // HTTP client
    string    m_headers;     // Content-Type + Authorization headers
+   bool      m_initialized; // is initialized
 
    string loadContextFiles();                              // Read and concatenate all CONTEXT_FILES
+   bool initialize();                                      // Load system prompt and context files
    string readFile(string path);                           // Read a text file
    void pushMessage(string role, string content);          // Append a standard role/content message
    void pushRaw(string serialized);                        // Append a pre-serialized JSON object (used for assistant messages with tool_calls)
@@ -64,13 +66,7 @@ Agent::Agent()
    m_dispatch        = new Dispatch();
    m_requests.url    = URL;
    m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
-
-#ifdef __MQL5__
-   string systemContent = readFile("context\\prompt.md") + "\nYou are in a MQL5/MetaTrader 5 environment." + loadContextFiles();
-#else
-   string systemContent = readFile("context\\prompt.md") + "\nYou are in a MQL4/MetaTrader 4 environment." + loadContextFiles();
-#endif
-   pushMessage("system", systemContent);
+   m_initialized     = initialize();
 }
 
 //+------------------------------------------------------------------+
@@ -85,6 +81,20 @@ Agent::~Agent()
    }
 }
 
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool Agent::initialize(void)
+{
+#ifdef __MQL5__
+   string systemContent = readFile("context\\prompt.md") + "\nYou are in a MQL5/MetaTrader 5 environment." + loadContextFiles();
+#else
+   string systemContent = readFile("context\\prompt.md") + "\nYou are in a MQL4/MetaTrader 4 environment." + loadContextFiles();
+#endif
+   if(systemContent == "") return false;
+   pushMessage("system", systemContent);
+   return true;
+}
 //+------------------------------------------------------------------+
 //| Read a text file                                                 |
 //+------------------------------------------------------------------+
@@ -147,6 +157,11 @@ void Agent::pushToolResult(string toolCallId, string content)
 //+------------------------------------------------------------------+
 string Agent::run(string prompt)
 {
+   if(!m_initialized)
+   {
+      m_initialized = initialize();
+      if(!m_initialized) return "Failed to initialize context.";
+   }
    pushMessage("user", prompt);
 
    CJAVal toolList;
@@ -160,8 +175,7 @@ string Agent::run(string prompt)
       payload["messages"].Set(m_messages);
       payload["tools"].Set(toolList);
 
-      bool ok = m_requests.POST(payload, 60000, m_headers, ROOT_URL);
-      if (!ok)
+      if(!m_requests.POST(payload, 60000, m_headers, ROOT_URL))
          return "HTTP request failed.";
 
       // After POST, payload is replaced with the parsed response
