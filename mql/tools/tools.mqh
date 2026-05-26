@@ -18,10 +18,20 @@
 ENUM_TIMEFRAMES StringToTimeframe(string tf)
 {
    if (tf == "PERIOD_M1")  return PERIOD_M1;
+   if (tf == "PERIOD_M2")  return PERIOD_M2;
+   if (tf == "PERIOD_M3")  return PERIOD_M3;
+   if (tf == "PERIOD_M4")  return PERIOD_M4;
    if (tf == "PERIOD_M5")  return PERIOD_M5;
+   if (tf == "PERIOD_M6")  return PERIOD_M6;
+   if (tf == "PERIOD_M10") return PERIOD_M10;
    if (tf == "PERIOD_M15") return PERIOD_M15;
+   if (tf == "PERIOD_M20") return PERIOD_M20;
+   if (tf == "PERIOD_M30") return PERIOD_M30;
    if (tf == "PERIOD_H1")  return PERIOD_H1;
+   if (tf == "PERIOD_H2")  return PERIOD_H2;
    if (tf == "PERIOD_H4")  return PERIOD_H4;
+   if (tf == "PERIOD_H8")  return PERIOD_H8;
+   if (tf == "PERIOD_H12") return PERIOD_H12;
    if (tf == "PERIOD_D1")  return PERIOD_D1;
    if (tf == "PERIOD_W1")  return PERIOD_W1;
    if (tf == "PERIOD_MN1") return PERIOD_MN1;
