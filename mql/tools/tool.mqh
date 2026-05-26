@@ -36,7 +36,7 @@ public:
 };
 
 //+------------------------------------------------------------------+
-//| Parameters — collection of properties for a tool's input schema  |                   
+//| Parameters — collection of properties for a tool's input schema  |
 //+------------------------------------------------------------------+
 class Parameters
 {
@@ -110,7 +110,7 @@ class Tool
 public:
    string      name;
    string      description;
-   Parameters *parameters; 
+   Parameters *parameters;
 
    Tool(string p_name, string p_description, Parameters *p_parameters = NULL)
    {
@@ -119,6 +119,10 @@ public:
       parameters  = p_parameters;
    }
 
+   virtual string execute(CJAVal &json)
+   {
+      return "{\"error\":\"not implemented\"}";
+   }
 
    void json_anthropic(CJAVal &out)
    {
