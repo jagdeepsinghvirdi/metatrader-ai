@@ -51,18 +51,16 @@ public:
       add(new ToolSelectSymbol());
    }
 
-   string toolList(bool isAnthropic = true)
+   void toolList(CJAVal &json, bool isAnthropic = true)
    {
-      CJAVal arr;
-      arr.m_type = jtARRAY;
+      json.m_type = jtARRAY;
       for (int i = 0; i < count; i++)
       {
          CJAVal t;
          if (isAnthropic) tools[i].json_anthropic(t);
          else             tools[i].json_openai(t);
-         arr.Add(t);
+         json.Add(t);
       }
-      return arr.Serialize();
    }
 
    string execute(string name, CJAVal &json)
