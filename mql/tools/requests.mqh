@@ -43,7 +43,7 @@ bool CRequests::GET(int timeout = 5000,string addon_headers = "Authorization: Ap
     result = "";
     char data[];  
     //Print(loader.Serialize());
-    ArrayResize(data, StringToCharArray(this.loader.Serialize(), data, 0, WHOLE_ARRAY) - 1);
+    ArrayResize(data, StringToCharArray(this.loader.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8) - 1);
     
     headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
     "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
@@ -79,7 +79,7 @@ bool CRequests::GET(CJAVal &json_object, int timeout = 5000,string addon_headers
     result = "";
     char data[];  
     //Print(loader.Serialize());
-    ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY) - 1);
+    ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8) - 1);
     
     headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
     "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
@@ -116,7 +116,7 @@ bool CRequests::POST(int timeout = 5000,string addon_headers = "Authorization: A
     result = "";
     char data[];  
     //Print(loader.Serialize());
-    ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY) - 1);
+    ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8) - 1);
     
     headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
     "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
@@ -153,7 +153,7 @@ bool CRequests::POST(CJAVal &json_object,int timeout = 5000,string addon_headers
     result = "";
     char data[]; 
     //Print(loader.Serialize());
-    ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY) - 1);
+    ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8) - 1);
     
     headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
     "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
@@ -189,7 +189,7 @@ bool CRequests::PUT(int timeout = 5000,string addon_headers = "Authorization: Ap
 {
    //--- serialize to string 
    char data[]; 
-   ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY)-1);
+   ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8)-1);
    
    headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
     "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
@@ -214,7 +214,7 @@ bool CRequests::DELETE(int timeout = 5000,string addon_headers = "Authorization:
 {
    //--- serialize to string 
    char data[]; 
-   ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY)-1);
+   ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8)-1);
    headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
     "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
    
@@ -246,7 +246,7 @@ bool CRequests::DELETE(CJAVal &json_object,int timeout = 5000,string addon_heade
 {
    //--- serialize to string 
    char data[]; 
-   ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY)-1);
+   ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8)-1);
    headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
     "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
    
