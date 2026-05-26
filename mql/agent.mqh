@@ -36,60 +36,6 @@ const string CONTEXT_FILES[] =
 //+------------------------------------------------------------------+
 class Agent
 {
-private:
-   CJAVal    m_messages;    // persistent conversation history (jtARRAY)
-   Dispatch *m_dispatch;    // tool dispatcher
-   CRequests m_requests;    // HTTP client
-   string    m_headers;     // Content-Type + Authorization headers
-   bool      m_initialized;
-
-   //--- Read a text file
-   string readFile(string path)
-   {
-      if(CONTAINS(path, "mql"))         return FileMQL;
-      if(CONTAINS(path, "trade"))    return FileTrade;
-      if(CONTAINS(path, "prompt"))   return FilePrompt;
-      if(CONTAINS(path, "response")) return FileResponse;
-      return "";
-   }
-
-   //--- Read and concatenate all CONTEXT_FILES
-   string loadContextFiles()
-   {
-      string combined = "";
-      int n = ArraySize(CONTEXT_FILES);
-      for (int i = 0; i < n; i++)
-         combined += "\n\n--- " + CONTEXT_FILES[i] + " ---\n" + readFile(CONTEXT_FILES[i]);
-      return combined;
-   }
-
-   //--- Append a standard role/content message
-   void pushMessage(string role, string content)
-   {
-      CJAVal msg;
-      msg["role"]    = role;
-      msg["content"] = content;
-      m_messages.Add(msg);
-   }
-
-   //--- Append a pre-serialized JSON object (used for assistant messages with tool_calls)
-   void pushRaw(string serialized)
-   {
-      CJAVal msg;
-      msg.Deserialize(serialized);
-      m_messages.Add(msg);
-   }
-
-   //--- Append a tool result message
-   void pushToolResult(string toolCallId, string content)
-   {
-      CJAVal msg;
-      msg["role"]         = "tool";
-      msg["tool_call_id"] = toolCallId;
-      msg["content"]      = content;
-      m_messages.Add(msg);
-   }
-
 public:
    Agent()
    {
@@ -212,6 +158,59 @@ public:
          systemMsg.Deserialize(systemMsgStr);
          m_messages.Add(systemMsg);
       }
+   }
+private:
+   CJAVal    m_messages;    // persistent conversation history (jtARRAY)
+   Dispatch *m_dispatch;    // tool dispatcher
+   CRequests m_requests;    // HTTP client
+   string    m_headers;     // Content-Type + Authorization headers
+   bool      m_initialized;
+
+   //--- Read a text file
+   string readFile(string path)
+   {
+      if(CONTAINS(path, "mql"))         return FileMQL;
+      if(CONTAINS(path, "trade"))    return FileTrade;
+      if(CONTAINS(path, "prompt"))   return FilePrompt;
+      if(CONTAINS(path, "response")) return FileResponse;
+      return "";
+   }
+
+   //--- Read and concatenate all CONTEXT_FILES
+   string loadContextFiles()
+   {
+      string combined = "";
+      int n = ArraySize(CONTEXT_FILES);
+      for (int i = 0; i < n; i++)
+         combined += "\n\n--- " + CONTEXT_FILES[i] + " ---\n" + readFile(CONTEXT_FILES[i]);
+      return combined;
+   }
+
+   //--- Append a standard role/content message
+   void pushMessage(string role, string content)
+   {
+      CJAVal msg;
+      msg["role"]    = role;
+      msg["content"] = content;
+      m_messages.Add(msg);
+   }
+
+   //--- Append a pre-serialized JSON object (used for assistant messages with tool_calls)
+   void pushRaw(string serialized)
+   {
+      CJAVal msg;
+      msg.Deserialize(serialized);
+      m_messages.Add(msg);
+   }
+
+   //--- Append a tool result message
+   void pushToolResult(string toolCallId, string content)
+   {
+      CJAVal msg;
+      msg["role"]         = "tool";
+      msg["tool_call_id"] = toolCallId;
+      msg["content"]      = content;
+      m_messages.Add(msg);
    }
 };
 
