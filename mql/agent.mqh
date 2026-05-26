@@ -112,7 +112,11 @@ public:
    //--- Load system prompt + context files into history
    bool initialize()
    {
-      string systemContent = readFile("context\\prompt.md") + loadContextFiles();
+#ifdef __MQL5__
+      string systemContent = readFile("context\\prompt.md") + "\nYou are in a MQL5/MetaTrader 5 environment." + loadContextFiles(); 
+#else
+      string systemContent = readFile("context\\prompt.md") + "\nYou are in a MQL4/MetaTrader 4 environment." + loadContextFiles(); 
+#endif
       pushMessage("system", systemContent);
       m_initialized = true;
       return true;
