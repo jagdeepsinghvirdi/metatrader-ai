@@ -26,12 +26,10 @@ const string CONTEXT_FILES[] =
    "workflows\\response.md",
 };
 
-#import "shell32.dll"
-int ShellExecuteW(int hWnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
-#import
-
-#define FILE_COPY(src, dest) (ShellExecuteW(0, "open", "cmd.exe", ("/C copy /Y \"" + src + "\" \"" + dest + "\""), NULL, 0))
-#define COMMON_FOLDER TerminalInfoString(TERMINAL_COMMONDATA_PATH) + "\\" + "Files" + "\\"
+#resource "\\Include\\metatrader-ai\\context\\mql.md" as string FileMQL
+#resource "\\Include\\metatrader-ai\\context\\trade.md" as string FileTrade
+#resource "\\Include\\metatrader-ai\\context\\prompt.md" as string FilePrompt
+#resource "\\Include\\metatrader-ai\\workflows\\response.md" as string FileResponse
 
 //+------------------------------------------------------------------+
 //| Agent — wraps multi-turn conversation state and OpenAI API calls |
@@ -48,20 +46,11 @@ private:
    //--- Read a text file
    string readFile(string path)
    {
-      const string ogPath = ::TerminalInfoString(TERMINAL_DATA_PATH) + "\\MQL5\\Include\\metatrader-ai\\" + path;
-      const string commonPath = COMMON_FOLDER + "metatrader-ai\\" + path;
-      FILE_COPY(ogPath, commonPath);
-      int handle = ::FileOpen("metatrader-ai\\" + path, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
-      if (handle == INVALID_HANDLE)
-      {
-         ::Print("[Agent] Error '" + (string)GetLastError() + "', could not open file: " + commonPath);
-         return "";
-      }
-      string content = "";
-      while (!::FileIsEnding(handle))
-         content += ::FileReadString(handle) + "\n";
-      ::FileClose(handle);
-      return content;
+      if(CONTAINS(path, "mql"))         return FileMQL;
+      if(CONTAINS(path, "trade"))    return FileTrade;
+      if(CONTAINS(path, "prompt"))   return FilePrompt;
+      if(CONTAINS(path, "response")) return FileResponse;
+      return "";
    }
 
    //--- Read and concatenate all CONTEXT_FILES
@@ -109,10 +98,6 @@ public:
       m_requests.url    = URL;
       m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
       m_initialized     = false;
-
-      if(!FolderCreate("metatrader-ai", FILE_COMMON)) Print("Failed to create metatrader-ai folder");
-      if(!FolderCreate("metatrader-ai\\context", FILE_COMMON)) Print("Failed to create metatrader-ai\\context folder");
-      if(!FolderCreate("metatrader-ai\\workflows", FILE_COMMON)) Print("Failed to create metatrader-ai\\workflows folder");
    }
 
    ~Agent()
@@ -141,18 +126,16 @@ public:
 
       pushMessage("user", prompt);
 
-      string toolsJson = m_dispatch.toolList(false); // false = OpenAI format
+      CJAVal toolList;
+      m_dispatch.toolList(toolList, false);
 
       while (true)
       {
-         // Build payload as raw JSON string to safely embed the messages array
-         string payloadStr = "{\"model\":\"" + MODEL + "\","
-                             + "\"tool_choice\":\"auto\","
-                             + "\"messages\":" + m_messages.Serialize() + ","
-                             + "\"tools\":" + toolsJson + "}";
-
          CJAVal payload;
-         payload.Deserialize(payloadStr);
+         payload["model"] = MODEL;
+         payload["tool_choice"] = "auto";
+         payload["messages"].Set(m_messages);
+         payload["tools"].Set(toolList);
 
          bool ok = m_requests.POST(payload, 60000, m_headers, ROOT_URL);
          if (!ok)
