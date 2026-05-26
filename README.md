@@ -88,13 +88,13 @@ Or define `OPENAI_API_KEY` in your own code before including the `agent.mqh` fil
 
 void OnStart()
 {
-   agentInit(); // initialize the agent
+   Agent *agent = new Agent();
 
     // get a response
-   string response = agentRun("What is the daily high of ETHUSD?");
+   string response = agent.run("What is the daily high of ETHUSD?");
    Print("[Agent] ", response);
 
-   agentDeinit(); // clean up the agent
+   delete agent; // clean up the agent
 }
 ```
 
