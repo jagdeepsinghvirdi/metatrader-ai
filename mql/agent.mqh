@@ -234,43 +234,4 @@ void Agent::reset()
       m_messages.Add(systemMsg);
    }
 }
-
-//--- Global agent instance
-Agent *g_agent = NULL;
-
-//+------------------------------------------------------------------+
-//| Run a prompt through the agent; returns the assistant's response |
-//| Call this from OnTick, OnTimer, or any Expert Advisor handler    |
-//+------------------------------------------------------------------+
-string agentRun(string prompt)
-{
-   if (g_agent == NULL)
-   {
-      g_agent = new Agent();
-   }
-   return g_agent.run(prompt);
-}
-
-//+------------------------------------------------------------------+
-//| Initialize the global agent — call from OnInit                   |
-//+------------------------------------------------------------------+
-void agentInit()
-{
-   if (g_agent != NULL)
-      delete g_agent;
-
-   g_agent = new Agent();
-}
-
-//+------------------------------------------------------------------+
-//| De-initialize the global agent — call from OnDeinit/when done    |
-//+------------------------------------------------------------------+
-void agentDeinit()
-{
-   if (g_agent != NULL)
-   {
-      delete g_agent;
-      g_agent = NULL;
-   }
-}
 //+------------------------------------------------------------------+
