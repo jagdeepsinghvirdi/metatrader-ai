@@ -1,274 +1,205 @@
 //+------------------------------------------------------------------+
 //|                                                     requests.mqh |
-//|                                          Copyright 2024,JBlanked |
+//|                                          Copyright 2026,JBlanked |
 //|                                        https://www.jblanked.com/ |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2024,JBlanked"
+#property copyright "Copyright 2026,JBlanked"
 #property link      "https://www.jblanked.com/"
 #property strict
-// from https://github.com/jblanked/MQL-Library/blob/main/Include/JB-Requests.mqh
 #include "JSON.mqh"
-class CRequests
+
+#import "Wininet.dll"
+int  InternetOpenW(string name, int config, string, string, int);
+int  InternetOpenUrlW(int, string, string, int, int, int);
+bool InternetReadFile(int, uchar &sBuffer[], int, int &OneInt);
+bool InternetCloseHandle(int);
+bool HttpSendRequestW(int hRequest, string lpszHeaders, int dwHeadersLength, uchar &lpOptional[], int dwOptionalLength);
+int  InternetConnectW(int hInternet, string lpszServerName, int nServerPort, string lpszUserName, string lpszPassword, int dwService, int dwFlags, int dwContext);
+int  HttpOpenRequestW(int hConnect, string lpszVerb, string lpszObjectName, string lpszVersion, string lpszReferer, int lplpszAcceptTypes, uint dwFlags, int dwContext);
+#import
+
+#ifdef __MQL5__
+#define REQUEST_USER_AGENT "MetaTrader 5 Terminal (Wininet)"
+#else
+#define REQUEST_USER_AGENT "MetaTrader 4 Terminal (Wininet)"
+#endif
+
+#define INTERNET_SERVICE_HTTP        3
+#define INTERNET_DEFAULT_HTTPS_PORT  443
+#define INTERNET_DEFAULT_HTTP_PORT   80
+#define INTERNET_FLAG_SECURE         ((uint)0x00800000)
+#define INTERNET_FLAG_RELOAD         ((uint)0x80000000)
+#define INTERNET_FLAG_NO_CACHE_WRITE ((uint)0x04000000)
+#define HTTP_ADDREQ_FLAG_ADD         0x20000000
+
+//
+string requestGet(const string url, const string headers);            // send a GET request
+string requestPost(const string url, const string headers, CJAVal &data); // send a POST request
+
+//+------------------------------------------------------------------+
+//| Parse scheme, host, port, and path from a URL                    |
+//+------------------------------------------------------------------+
+bool ParseUrl(const string url, string &scheme, string &host, int &port, string &path)
 {
-   private:
-      string res_headers;
-      int r;
-      int bytesRead;
-      string headers;
-      uchar buffer[1024];
-      int hInternet;
-      int hUrl;
-         
-   public:
-      string url;
-      CJAVal loader;
-      string result;
-      string key;
-      
-      bool GET(int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/");
-      bool GET(CJAVal &json_object, int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/");
+   scheme = "";
+   host   = "";
+   path   = "/";
+   port   = 80;
 
-      bool POST(int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/");
-      bool POST(CJAVal &json_object,int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/");
-      
-      bool PUT(int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/");
-      
-      bool DELETE(int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/");
-      bool DELETE(CJAVal &json_object,int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/");
-};
+   int schemeEnd = StringFind(url, "://");
+   if(schemeEnd < 0) return false;
 
-bool CRequests::GET(int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/")
-{
-    //--- serialize to string 
-    result = "";
-    char data[];  
-    //Print(loader.Serialize());
-    ArrayResize(data, StringToCharArray(this.loader.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8) - 1);
-    
-    headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
-    "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
-    
-    //--- send data
-    char res_data[];
-    res_headers = NULL;
-    r = WebRequest("GET", this.url, headers, timeout, data, res_data, res_headers);
-    
-    if (r != -1)
-    {
-        result = CharArrayToString(res_data, 0, -1, CP_UTF8); 
-        
-        if (StringLen(result) > 0){
-            this.loader.Clear();
-            this.loader.Deserialize(result, CP_UTF8);
-            }
-            
-         
-        return true;
-    }
-    else 
-    {
-    MessageBox("Add the address " + " ' " + urlToShow + " ' " + " to the list of allowed URLs on tab 'Expert Advisors'","Error",MB_ICONINFORMATION); 
-    return false;
-    }
-      
-}
+   scheme = StringSubstr(url, 0, schemeEnd);
+   StringToLower(scheme);
 
-bool CRequests::GET(CJAVal &json_object, int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/")
-{
-    //--- serialize to string 
-    result = "";
-    char data[];  
-    //Print(loader.Serialize());
-    ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8) - 1);
-    
-    headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
-    "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
-    
-    //--- send data
-    char res_data[];
-    res_headers = NULL;
-    r = WebRequest("GET", this.url, headers, timeout, data, res_data, res_headers);
-    
-    if (r != -1)
-    {
-        result = CharArrayToString(res_data, 0, -1, CP_UTF8); 
-        
-        if (StringLen(result) > 0){
-            json_object.Clear();
-            json_object.Deserialize(result, CP_UTF8);
-            }
-            
-         
-        return true;
-    }
-    else 
-    {
-    MessageBox("Add the address " + " ' " + urlToShow + " ' " + " to the list of allowed URLs on tab 'Expert Advisors'","Error",MB_ICONINFORMATION); 
-    return false;
-    }
-      
-}
+   string rest = StringSubstr(url, schemeEnd + 3);
 
-
-bool CRequests::POST(int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/")
-{
-    //--- serialize to string 
-    result = "";
-    char data[];  
-    //Print(loader.Serialize());
-    ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8) - 1);
-    
-    headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
-    "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
-    
-    //--- send data
-    char res_data[];
-    res_headers = NULL;
-    r = WebRequest("POST", this.url, headers, timeout, data, res_data, res_headers);
-    
-    if (r != -1)
-    {
-        result = CharArrayToString(res_data, 0, -1, CP_UTF8); 
-        
-        if (StringLen(result) > 0){
-            this.loader.Clear();
-            this.loader.Deserialize(result, CP_UTF8);
-            }
-            
-         
-        return true;
-    }
-    else 
-    {
-    MessageBox("Add the address " + " ' " + urlToShow + " ' " + " to the list of allowed URLs on tab 'Expert Advisors'","Error",MB_ICONINFORMATION); 
-    return false;
-    }
-      
-}
- 
-
-bool CRequests::POST(CJAVal &json_object,int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/")
-{
-    //--- serialize to string 
-    result = "";
-    char data[]; 
-    //Print(loader.Serialize());
-    ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8) - 1);
-    
-    headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
-    "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
-    
-    //--- send data
-    char res_data[];
-    res_headers = NULL;
-    r = WebRequest("POST", this.url, headers, timeout, data, res_data, res_headers);
-    
-    if (r != -1)
-    {
-        result = CharArrayToString(res_data, 0, -1, CP_UTF8); 
-        
-        if (StringLen(result) > 0){
-            json_object.Clear();
-            json_object.Deserialize(result, CP_UTF8);
-            }
-            
-         
-        return true;
-    }
-    else 
-    {
-    MessageBox("Add the address " + " ' " + urlToShow + " ' " + " to the list of allowed URLs on tab 'Expert Advisors'","Error",MB_ICONINFORMATION); 
-    return false;
-    }
-      
-}
- 
-
-
-bool CRequests::PUT(int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/")
-{
-   //--- serialize to string 
-   char data[]; 
-   ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8)-1);
-   
-   headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
-    "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
-   
-   //--- send data
-   char res_data[];
-   res_headers=NULL;
-   r=WebRequest("PUT",  this.url, headers, timeout, data, res_data, res_headers);
-   
-   if(r == -1){
-   MessageBox("Add the address '"+urlToShow+"' to the list of allowed URLs on tab 'Expert Advisors'","Error",MB_ICONINFORMATION); 
-   return false;
+   int slashPos = StringFind(rest, "/");
+   string hostPort;
+   if(slashPos < 0)
+   {
+      hostPort = rest;
+      path     = "/";
    }
    else
    {
-   return true;
+      hostPort = StringSubstr(rest, 0, slashPos);
+      path     = StringSubstr(rest, slashPos);
    }
-   
-}
 
-bool CRequests::DELETE(int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/")
-{
-   //--- serialize to string 
-   char data[]; 
-   ArrayResize(data, StringToCharArray(loader.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8)-1);
-   headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
-    "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
-   
-   //--- send data
-   char res_data[];
-   res_headers=NULL;
-   r=WebRequest("DELETE",  this.url, headers, timeout, data, res_data, res_headers);
-   if (r != -1)
-    {
-        result = CharArrayToString(res_data, 0, -1, CP_UTF8); 
-        
-        if (StringLen(result) > 0){
-            this.loader.Clear();
-            this.loader.Deserialize(result, CP_UTF8);
-            }
-            
-         
-        return true;
-    }
+   int colonPos = StringFind(hostPort, ":");
+   if(colonPos < 0)
+   {
+      host = hostPort;
+      port = (scheme == "https") ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT;
+   }
    else
    {
-   MessageBox("Add the address '"+urlToShow+"' to the list of allowed URLs on tab 'Expert Advisors'","Error",MB_ICONINFORMATION); 
-   return false;
+      host = StringSubstr(hostPort, 0, colonPos);
+      port = (int)StringToInteger(StringSubstr(hostPort, colonPos + 1));
    }
-   
+
+   return host != "";
 }
 
-bool CRequests::DELETE(CJAVal &json_object,int timeout = 5000,string addon_headers = "Authorization: Api-Key ", string urlToShow = "https://www.jblanked.com/")
+//+------------------------------------------------------------------+
+//| Read all bytes from an open WinInet handle into a string         |
+//+------------------------------------------------------------------+
+string ReadResponse(int hRequest)
 {
-   //--- serialize to string 
-   char data[]; 
-   ArrayResize(data, StringToCharArray(json_object.Serialize(), data, 0, WHOLE_ARRAY, CP_UTF8)-1);
-   headers = addon_headers == NULL ? "Content-Type: application/json" : StringSubstr(addon_headers,0,22) == "Authorization: Api-Key" ?
-    "Content-Type: application/json" + "\r\n" + addon_headers + key : addon_headers;
-   
-   //--- send data
-   char res_data[];
-   res_headers=NULL;
-    r=WebRequest("DELETE",  this.url, headers, timeout, data, res_data, res_headers);
-   if (r != -1)
-    {
-        result = CharArrayToString(res_data, 0, -1, CP_UTF8); 
-        
-        if (StringLen(result) > 0){
-            json_object.Clear();
-            json_object.Deserialize(result, CP_UTF8);
-            }
-            
-         
-        return true;
-    }
-   else
+   string result = "";
+   uchar  buffer[4096];
+   int    bytesRead = 0;
+
+   while(InternetReadFile(hRequest, buffer, ArraySize(buffer) - 1, bytesRead) && bytesRead > 0)
    {
-   MessageBox("Add the address '"+urlToShow+"' to the list of allowed URLs on tab 'Expert Advisors'","Error",MB_ICONINFORMATION); 
-   return false;
+      buffer[bytesRead] = 0;
+      result += CharArrayToString(buffer, 0, bytesRead, CP_UTF8);
    }
+   return result;
 }
+
+//+------------------------------------------------------------------+
+//| Send a GET request                                               |
+//+------------------------------------------------------------------+
+string requestGet(const string url, const string headers)
+{
+   uchar buffer[1024];
+   int   bytesRead = 0;
+   string result   = "";
+
+   const int hInternet = InternetOpenW(REQUEST_USER_AGENT, 1, NULL, NULL, 0);
+   if(!hInternet)
+   {
+      PrintFormat("requestGet: Failed to initialize WinHTTP, code: %d", hInternet);
+      return result;
+   }
+
+   const int hUrl = InternetOpenUrlW(hInternet, url, NULL, 0, 0, 0);
+   if(!hUrl)
+   {
+      PrintFormat("requestGet: Failed to open URL, code: %d", hInternet);
+      InternetCloseHandle(hInternet);
+      return result;
+   }
+
+   if(HttpSendRequestW(hUrl, headers, StringLen(headers), buffer, 0))
+   {
+      while(InternetReadFile(hUrl, buffer, ArraySize(buffer) - 1, bytesRead) && bytesRead > 0)
+      {
+         buffer[bytesRead] = 0;
+         result += CharArrayToString(buffer, 0, bytesRead, CP_UTF8);
+      }
+   }
+
+   InternetCloseHandle(hUrl);
+   InternetCloseHandle(hInternet);
+   return result;
+}
+
+//+------------------------------------------------------------------+
+//| Send a POST request                                              |
+//+------------------------------------------------------------------+
+string requestPost(const string url, const string headers, CJAVal &data)
+{
+   string result = "";
+
+   string scheme, host, path;
+   int    port;
+   if(!ParseUrl(url, scheme, host, port, path))
+   {
+      Print("requestPost: Invalid URL: ", url);
+      return result;
+   }
+
+   bool isHttps = (scheme == "https");
+   uint  flags   = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE;
+   if(isHttps) flags |= INTERNET_FLAG_SECURE;
+
+   int hInternet = InternetOpenW(REQUEST_USER_AGENT, 1, NULL, NULL, 0);
+   if(!hInternet)
+   {
+      Print("requestPost: Failed to initialize WinHTTP");
+      return result;
+   }
+
+   int hConnect = InternetConnectW(hInternet, host, port, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+   if(!hConnect)
+   {
+      Print("requestPost: Failed to connect to host: ", host);
+      InternetCloseHandle(hInternet);
+      return result;
+   }
+
+   int hRequest = HttpOpenRequestW(hConnect, "POST", path, "HTTP/1.1", NULL, 0, flags, 0);
+   if(!hRequest)
+   {
+      Print("requestPost: Failed to open HTTP request");
+      InternetCloseHandle(hConnect);
+      InternetCloseHandle(hInternet);
+      return result;
+   }
+
+   string headerStr = "Content-Type: application/json\r\n" + headers;
+   string bodyStr = data.Serialize();
+   uchar  bodyBytes[];
+   StringToCharArray(bodyStr, bodyBytes, 0, StringLen(bodyStr), CP_UTF8);
+   int bodyLen = ArraySize(bodyBytes);
+
+   if(!HttpSendRequestW(hRequest, headerStr, StringLen(headerStr), bodyBytes, bodyLen))
+   {
+      Print("requestPost: HttpSendRequestW failed");
+      InternetCloseHandle(hRequest);
+      InternetCloseHandle(hConnect);
+      InternetCloseHandle(hInternet);
+      return result;
+   }
+
+   result = ReadResponse(hRequest);
+
+   InternetCloseHandle(hRequest);
+   InternetCloseHandle(hConnect);
+   InternetCloseHandle(hInternet);
+   return result;
+}
+//+------------------------------------------------------------------+

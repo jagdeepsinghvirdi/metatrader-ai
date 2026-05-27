@@ -45,7 +45,6 @@ public:
 private:
    CJAVal    m_messages;    // persistent conversation history (jtARRAY)
    Dispatch *m_dispatch;    // tool dispatcher
-   CRequests m_requests;    // HTTP client
    string    m_headers;     // Content-Type + Authorization headers
    bool      m_initialized; // is initialized
 
@@ -64,9 +63,8 @@ Agent::Agent()
 {
    m_messages.m_type = jtARRAY;
    m_dispatch        = new Dispatch();
-   m_requests.url    = URL;
-   m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
    m_initialized     = initialize();
+   m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
 }
 
 //+------------------------------------------------------------------+
@@ -175,17 +173,20 @@ string Agent::run(string prompt)
       payload["messages"].Set(m_messages);
       payload["tools"].Set(toolList);
 
-      if(!m_requests.POST(payload, 60000, m_headers, ROOT_URL))
+      string jsonString = requestPost(URL, m_headers, payload);
+      if(jsonString == "")
          return "HTTP request failed.";
 
-      // After POST, payload is replaced with the parsed response
-      if (payload["error"]["message"].ToStr() != "")
-         return "API error: " + payload["error"]["message"].ToStr();
+      CJAVal response;
+      response.Deserialize(jsonString);
 
-      if (payload["choices"].m_type != jtARRAY || ArraySize(payload["choices"].m_e) == 0)
-         return "Unexpected API response: " + m_requests.result;
+      if (response["error"]["message"].ToStr() != "")
+         return "API error: " + response["error"]["message"].ToStr();
 
-      string msgSerialized = payload["choices"][0]["message"].Serialize();
+      if (response["choices"].m_type != jtARRAY || ArraySize(response["choices"].m_e) == 0)
+         return "Unexpected API response: " + jsonString;
+
+      string msgSerialized = response["choices"][0]["message"].Serialize();
 
       CJAVal message;
       message.Deserialize(msgSerialized);
