@@ -65,6 +65,24 @@ public:
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+class ToolGetBars : public Tool
+{
+public:
+   ToolGetBars() : Tool("get_bars", "Get rates for a specific symbol, timeframe, and range.", toolGetBarsParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getBars(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (datetime)StringToTime(json["from_date"].ToStr()),
+                (datetime)StringToTime(json["to_date"].ToStr())
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 class ToolGetHistoryPosition : public Tool
 {
 public:

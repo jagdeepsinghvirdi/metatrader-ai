@@ -18,6 +18,26 @@ Tool TOOL_ACCOUNT_INFO(
    NULL
 );
 //+------------------------------------------------------------------+
+//| Parameters for get_bars                                          |
+//+------------------------------------------------------------------+
+Parameters *toolGetBarsParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",    "string",  "The trading symbol", true));
+   p.add(new Property("timeframe", "string",  "The timeframe (e.g. 1 for 1-Minute, 5 for 5-Minute, 15 for 15-Minute, 30 for 30-Minute, 16385 for 1-Hour, 16388 for 4-Hour, 16408 for Daily, 32769 for Weekly, 49153 for Monthly)", true));
+   p.add(new Property("from_date", "string",  "Start date", true));
+   p.add(new Property("to_date",   "string",  "End date", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get bars tool                                                    |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_BARS(
+   "get_bars",
+   "Get rates for a specific symbol, timeframe, and range.",
+   toolGetBarsParams()
+);
+//+------------------------------------------------------------------+
 //| Parameters for get_history_position                              |
 //+------------------------------------------------------------------+
 Parameters *toolHistoryPositionParams(void)

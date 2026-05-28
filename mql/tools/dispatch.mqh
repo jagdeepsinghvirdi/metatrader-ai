@@ -24,6 +24,7 @@ public:
       ArrayResize(tools, 0);
 
       add(new ToolGetAccountInfo());
+      add(new ToolGetBars());
       add(new ToolGetHistoryPosition());
       add(new ToolGetHistoryPositions());
       add(new ToolGetOrder());
