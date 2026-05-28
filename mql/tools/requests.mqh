@@ -13,9 +13,9 @@ int  InternetOpenW(string name, int config, string, string, int);
 int  InternetOpenUrlW(int, string, string, int, int, int);
 bool InternetReadFile(int, uchar &sBuffer[], int, int &OneInt);
 bool InternetCloseHandle(int);
-bool HttpSendRequestW(int hRequest, string lpszHeaders, int dwHeadersLength, uchar &lpOptional[], int dwOptionalLength);
+bool HttpSendRequestW(int hRequest, string lpszHeaders, int dwHeadersLength, char &lpOptional[], int dwOptionalLength);
 int  InternetConnectW(int hInternet, string lpszServerName, int nServerPort, string lpszUserName, string lpszPassword, int dwService, int dwFlags, int dwContext);
-int  HttpOpenRequestW(int hConnect, string lpszVerb, string lpszObjectName, string lpszVersion, string lpszReferer, int lplpszAcceptTypes, uint dwFlags, int dwContext);
+int  HttpOpenRequestW(int hConnect, string lpszVerb, string lpszObjectName, string lpszVersion, string lpszReferer, string lplpszAcceptTypes, uint dwFlags, int dwContext);
 #import
 
 #ifdef __MQL5__
@@ -33,13 +33,13 @@ int  HttpOpenRequestW(int hConnect, string lpszVerb, string lpszObjectName, stri
 #define HTTP_ADDREQ_FLAG_ADD         0x20000000
 
 //
-string requestGet(const string url, const string headers);            // send a GET request
+string requestGet(const string url, const string headers);                // send a GET request
 string requestPost(const string url, const string headers, CJAVal &data); // send a POST request
 
 //+------------------------------------------------------------------+
 //| Parse scheme, host, port, and path from a URL                    |
 //+------------------------------------------------------------------+
-bool ParseUrl(const string url, string &scheme, string &host, int &port, string &path)
+bool parseUrl(const string url, string &scheme, string &host, int &port, string &path)
 {
    scheme = "";
    host   = "";
@@ -85,7 +85,7 @@ bool ParseUrl(const string url, string &scheme, string &host, int &port, string 
 //+------------------------------------------------------------------+
 //| Read all bytes from an open WinInet handle into a string         |
 //+------------------------------------------------------------------+
-string ReadResponse(int hRequest)
+string readResponse(int hRequest)
 {
    string result = "";
    uchar  buffer[4096];
@@ -104,31 +104,32 @@ string ReadResponse(int hRequest)
 //+------------------------------------------------------------------+
 string requestGet(const string url, const string headers)
 {
-   uchar buffer[1024];
-   int   bytesRead = 0;
-   string result   = "";
+   char   buffer[1024];
+   int    bytesRead = 0;
+   string result    = "";
 
-   const int hInternet = InternetOpenW(REQUEST_USER_AGENT, 1, NULL, NULL, 0);
+   int hInternet = InternetOpenW(REQUEST_USER_AGENT, 1, NULL, NULL, 0);
    if(!hInternet)
    {
-      PrintFormat("requestGet: Failed to initialize WinHTTP, code: %d", hInternet);
+      Print("requestGet: Failed to initialize WinHTTP");
       return result;
    }
 
-   const int hUrl = InternetOpenUrlW(hInternet, url, NULL, 0, 0, 0);
+   int hUrl = InternetOpenUrlW(hInternet, url, NULL, 0, 0, 0);
    if(!hUrl)
    {
-      PrintFormat("requestGet: Failed to open URL, code: %d", hInternet);
+      Print("requestGet: Failed to open URL");
       InternetCloseHandle(hInternet);
       return result;
    }
 
    if(HttpSendRequestW(hUrl, headers, StringLen(headers), buffer, 0))
    {
-      while(InternetReadFile(hUrl, buffer, ArraySize(buffer) - 1, bytesRead) && bytesRead > 0)
+      uchar recv[1024];
+      while(InternetReadFile(hUrl, recv, ArraySize(recv) - 1, bytesRead) && bytesRead > 0)
       {
-         buffer[bytesRead] = 0;
-         result += CharArrayToString(buffer, 0, bytesRead, CP_UTF8);
+         recv[bytesRead] = 0;
+         result += CharArrayToString(recv, 0, bytesRead, CP_UTF8);
       }
    }
 
@@ -146,15 +147,20 @@ string requestPost(const string url, const string headers, CJAVal &data)
 
    string scheme, host, path;
    int    port;
-   if(!ParseUrl(url, scheme, host, port, path))
+   if(!parseUrl(url, scheme, host, port, path))
    {
       Print("requestPost: Invalid URL: ", url);
       return result;
    }
 
    bool isHttps = (scheme == "https");
-   uint  flags   = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE;
+   uint flags   = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE;
    if(isHttps) flags |= INTERNET_FLAG_SECURE;
+
+   string headerStr = "Content-Type: application/json\r\n" + headers;
+   string bodyStr   = data.Serialize();
+   char   bodyBytes[];
+   int    bodyLen   = StringToCharArray(bodyStr, bodyBytes, 0, StringLen(bodyStr), CP_UTF8);
 
    int hInternet = InternetOpenW(REQUEST_USER_AGENT, 1, NULL, NULL, 0);
    if(!hInternet)
@@ -171,7 +177,8 @@ string requestPost(const string url, const string headers, CJAVal &data)
       return result;
    }
 
-   int hRequest = HttpOpenRequestW(hConnect, "POST", path, "HTTP/1.1", NULL, 0, flags, 0);
+   string emptyStr = "";
+   int hRequest = HttpOpenRequestW(hConnect, "POST", path, "HTTP/1.1", emptyStr, emptyStr, flags, 0);
    if(!hRequest)
    {
       Print("requestPost: Failed to open HTTP request");
@@ -179,12 +186,6 @@ string requestPost(const string url, const string headers, CJAVal &data)
       InternetCloseHandle(hInternet);
       return result;
    }
-
-   string headerStr = "Content-Type: application/json\r\n" + headers;
-   string bodyStr = data.Serialize();
-   uchar  bodyBytes[];
-   StringToCharArray(bodyStr, bodyBytes, 0, StringLen(bodyStr), CP_UTF8);
-   int bodyLen = ArraySize(bodyBytes);
 
    if(!HttpSendRequestW(hRequest, headerStr, StringLen(headerStr), bodyBytes, bodyLen))
    {
@@ -195,7 +196,7 @@ string requestPost(const string url, const string headers, CJAVal &data)
       return result;
    }
 
-   result = ReadResponse(hRequest);
+   result = readResponse(hRequest);
 
    InternetCloseHandle(hRequest);
    InternetCloseHandle(hConnect);
