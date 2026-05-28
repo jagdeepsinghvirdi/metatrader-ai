@@ -25,6 +25,7 @@ static CPositionInfo mt5Posi;
 // forwards (in mql4 is shows import warning)
 #ifdef __MQL5__
 string getAccountInfo();
+string getBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const datetime fromDate, const datetime toDate);
 string getHistoryPosition(const ulong ticket);
 string getHistoryPositions(const string symbol = "", const long magic = 0, const datetime fromDate = 0, const datetime toDate = 0);
 string getOrder(const ulong ticket);
@@ -64,6 +65,31 @@ string getAccountInfo(void)
    result["currency"]     = AccountInfoString(ACCOUNT_CURRENCY);
    result["company"]      = AccountInfoString(ACCOUNT_COMPANY);
    result["profit"]       = AccountInfoDouble(ACCOUNT_PROFIT);
+   return result.Serialize();
+}
+
+//+------------------------------------------------------------------+
+//| Get rates for a specific symbol, timeframe, and range            |
+//+------------------------------------------------------------------+
+string getBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const datetime fromDate, const datetime toDate)
+{
+   CJAVal result;
+   MqlRates rates[];
+   if(CopyRates(symbol, timeframe, fromDate, toDate, rates) == -1)
+   {
+      Print("Failed to fetch rates for " + symbol);
+      return "";
+   }
+   for(int i = 0; i < ArraySize(rates); i++)
+   {
+      result["bars"][i]["close"]       = rates[i].close;
+      result["bars"][i]["open"]        = rates[i].open;
+      result["bars"][i]["high"]        = rates[i].high;
+      result["bars"][i]["low"]         = rates[i].low;
+      result["bars"][i]["spread"]      = rates[i].spread;
+      result["bars"][i]["tick_volume"] = rates[i].tick_volume;
+      result["bars"][i]["real_volume"] = rates[i].real_volume;
+   }
    return result.Serialize();
 }
 
