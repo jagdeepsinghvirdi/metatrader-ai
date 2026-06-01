@@ -26,10 +26,19 @@ const string CONTEXT_FILES[] =
    "workflows\\response.md",
 };
 
+#ifdef __MQL5__
 #resource "\\Include\\metatrader-ai\\context\\mql.md" as string FileMQL
 #resource "\\Include\\metatrader-ai\\context\\trade.md" as string FileTrade
 #resource "\\Include\\metatrader-ai\\context\\prompt.md" as string FilePrompt
 #resource "\\Include\\metatrader-ai\\workflows\\response.md" as string FileResponse
+#else
+#import "shell32.dll"
+int ShellExecuteW(int hWnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
+#import
+
+#define FILE_COPY(src, dest) (ShellExecuteW(0, "open", "cmd.exe", ("/C copy /Y \"" + src + "\" \"" + dest + "\""), NULL, 0))
+#define COMMON_FOLDER TerminalInfoString(TERMINAL_COMMONDATA_PATH) + "\\" + "Files" + "\\"
+#endif
 
 //+------------------------------------------------------------------+
 //| Agent — wraps multi-turn conversation state and OpenAI API calls |
@@ -65,6 +74,11 @@ Agent::Agent()
    m_dispatch        = new Dispatch();
    m_initialized     = initialize();
    m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
+#ifdef __MQL4__
+   if(!FolderCreate("metatrader-ai", FILE_COMMON)) Print("Failed to create metatrader-ai folder");
+   if(!FolderCreate("metatrader-ai\\context", FILE_COMMON)) Print("Failed to create metatrader-ai\\context folder");
+   if(!FolderCreate("metatrader-ai\\workflows", FILE_COMMON)) Print("Failed to create metatrader-ai\\workflows folder");
+#endif
 }
 
 //+------------------------------------------------------------------+
@@ -98,11 +112,28 @@ bool Agent::initialize(void)
 //+------------------------------------------------------------------+
 string Agent::readFile(string path)
 {
+#ifdef __MQL5__
    if(CONTAINS(path, "mql"))      return FileMQL;
    if(CONTAINS(path, "trade"))    return FileTrade;
    if(CONTAINS(path, "prompt"))   return FilePrompt;
    if(CONTAINS(path, "response")) return FileResponse;
    return "";
+#else
+   const string ogPath = ::TerminalInfoString(TERMINAL_DATA_PATH) + "\\MQL5\\Include\\metatrader-ai\\" + path;
+   const string commonPath = COMMON_FOLDER + "metatrader-ai\\" + path;
+   FILE_COPY(ogPath, commonPath);
+   int handle = ::FileOpen("metatrader-ai\\" + path, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
+   if (handle == INVALID_HANDLE)
+   {
+      ::Print("[Agent] Error '" + (string)GetLastError() + "', could not open file: " + commonPath);
+      return "";
+   }
+   string content = "";
+   while (!::FileIsEnding(handle))
+      content += ::FileReadString(handle) + "\n";
+   ::FileClose(handle);
+   return content;
+#endif
 }
 
 //+------------------------------------------------------------------+
