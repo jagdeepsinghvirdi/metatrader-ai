@@ -3,3 +3,7 @@ __pycache__
 secrets.py
 secrets.mqh
 venv/
+dist/
+build/
+*.egg-info/
+python/build.sh
