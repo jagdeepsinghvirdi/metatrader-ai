@@ -1,4 +1,5 @@
-import sys
+from __future__ import annotations
+
 import re
 from datetime import datetime, timezone
 from functools import wraps
@@ -7,10 +8,14 @@ from .tool import Tool, Property, Parameters
 try:
     import MetaTrader5
 except ImportError:
-    print(
-        "\033[91mMetaTrader5 module not found. It is only available on Windows/Linux and can be installed using 'pip install --upgrade MetaTrader5'.\033[0m"
-    )
-    sys.exit(1)
+    MetaTrader5 = None  # type: ignore[assignment]
+
+
+def _require_mt5_installed() -> None:
+    if MetaTrader5 is None:
+        raise ImportError(
+            "MetaTrader5 module not found. It is only available on Windows/Linux and can be installed using 'pip install --upgrade MetaTrader5'."
+        )
 
 
 def _require_connection(method: callable):
@@ -18,6 +23,7 @@ def _require_connection(method: callable):
 
     @wraps(method)
     def wrapper(self, *args, **kwargs):
+        _require_mt5_installed()
         if not MetaTrader5.terminal_info() or not MetaTrader5.terminal_info().connected:
             raise RuntimeError("Not connected to MetaTrader 5. Call login() first.")
         return method(self, *args, **kwargs)
@@ -31,6 +37,7 @@ class MT5:
     def __init__(
         self, account_number: int, account_password: str, broker_server_name: str
     ):
+        _require_mt5_installed()
         self._account_number = account_number
         self._account_password = account_password
         self._broker_server_name = broker_server_name
@@ -762,7 +769,7 @@ class MT5:
                 password=self._account_password,
                 server=self._broker_server_name,
             )
-        except Exception as e:
+        except (RuntimeError, TypeError, ValueError, OSError) as e:
             print(f"\033[91mFailed to initialize MetaTrader 5: {e}\033[0m")
             return False
 
@@ -770,7 +777,7 @@ class MT5:
         """Establish MetaTrader 5 connection without credentials"""
         try:
             return MetaTrader5.initialize()
-        except Exception as e:
+        except (RuntimeError, TypeError, ValueError, OSError) as e:
             print(f"\033[91mFailed to initialize MetaTrader 5: {e}\033[0m")
             return False
 
