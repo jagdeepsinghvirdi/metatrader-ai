@@ -33,8 +33,10 @@ int  HttpOpenRequestW(int hConnect, string lpszVerb, string lpszObjectName, stri
 #define HTTP_ADDREQ_FLAG_ADD         0x20000000
 
 //
+#ifdef __MQL5__
 string requestGet(const string url, const string headers);                // send a GET request
 string requestPost(const string url, const string headers, CJAVal &data); // send a POST request
+#endif
 
 //+------------------------------------------------------------------+
 //| Parse scheme, host, port, and path from a URL                    |
