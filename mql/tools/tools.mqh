@@ -11,6 +11,9 @@
 #include "compile.mqh"
 #include "tool.mqh"
 #include "indicators.mqh"
+#include "file.mqh"
+#include "terminal.mqh"
+#include "chart.mqh"
 
 #define BOOL_TO_STRING(value) ((value) ? "true" : "false")
 
@@ -862,5 +865,164 @@ public:
                 StringToVolumeType(json["volume_type"].ToStr()),
                 (int)json["shift"].ToInt()
              );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolFileCopy : public Tool
+{
+public:
+   ToolFileCopy() : Tool("file_copy", "Copy a file from source to destination.", toolFileCopyParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return fileCopy(json["src"].ToStr(), json["dest"].ToStr());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolFileDelete : public Tool
+{
+public:
+   ToolFileDelete() : Tool("file_delete", "Delete a file by path.", toolFileDeleteParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return fileDelete(json["path"].ToStr());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolFileExists : public Tool
+{
+public:
+   ToolFileExists() : Tool("file_exists", "Check if a file exists at the specified path.", toolFileExistsParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return fileExists(json["path"].ToStr());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolFileMove : public Tool
+{
+public:
+   ToolFileMove() : Tool("file_move", "Move a file from source to destination.", toolFileMoveParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return fileMove(json["src"].ToStr(), json["dest"].ToStr());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolFileRead : public Tool
+{
+public:
+   ToolFileRead() : Tool("file_read", "Read the contents of a file.", toolFileReadParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return fileRead(json["path"].ToStr());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolFileWrite : public Tool
+{
+public:
+   ToolFileWrite() : Tool("file_write", "Write content to a file.", toolFileWriteParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      string content = json["content"].ToStr();
+      char data[];
+      StringToCharArray(content, data);
+      return fileWrite(json["path"].ToStr(), data, (int)json["index"].ToInt(), (bool)json["overwrite"].ToInt());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetTerminalInfo : public Tool
+{
+public:
+   ToolGetTerminalInfo() : Tool("get_terminal_info", "Get information about the current MetaTrader terminal.", toolGetTerminalInfoParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getTerminalInfo();
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolChartClose : public Tool
+{
+public:
+   ToolChartClose() : Tool("chart_close", "Close a chart by chart ID.", toolChartCloseParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return chartClose((long)json["chart_id"].ToInt());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolChartOpen : public Tool
+{
+public:
+   ToolChartOpen() : Tool("chart_open", "Open a new chart for a symbol and timeframe.", toolChartOpenParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return chartOpen(json["symbol"].ToStr(), StringToTimeframe(json["timeframe"].ToStr()));
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetChartInfo : public Tool
+{
+public:
+   ToolGetChartInfo() : Tool("get_chart_info", "Get detailed information about a chart.", toolGetChartInfoParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getChartInfo((long)json["chart_id"].ToInt());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetChartIndicator : public Tool
+{
+public:
+   ToolGetChartIndicator() : Tool("get_chart_indicator", "Find an indicator on the chart and return its details.", toolGetChartIndicatorParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getChartIndicator(json["indicator_name"].ToStr());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolRemoveChartIndicator : public Tool
+{
+public:
+   ToolRemoveChartIndicator() : Tool("remove_chart_indicator", "Remove an indicator from the chart.", toolRemoveChartIndicatorParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return removeChartIndicator(json["indicator_name"].ToStr(), (long)json["chart_id"].ToInt(), (int)json["sub_window"].ToInt());
    }
 };

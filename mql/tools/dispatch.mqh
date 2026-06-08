@@ -72,6 +72,21 @@ public:
       add(new ToolGetVWAP());
       add(new ToolGetPVI());
 
+      add(new ToolFileCopy());
+      add(new ToolFileDelete());
+      add(new ToolFileExists());
+      add(new ToolFileMove());
+      add(new ToolFileRead());
+      add(new ToolFileWrite());
+
+      add(new ToolGetTerminalInfo());
+      
+      add(new ToolChartClose());
+      add(new ToolChartOpen());
+      add(new ToolGetChartInfo());
+      add(new ToolGetChartIndicator());
+      add(new ToolRemoveChartIndicator());
+
       add(new ToolCompileMql5());
    }
 
