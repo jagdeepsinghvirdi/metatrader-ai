@@ -8,6 +8,7 @@
 #property strict
 #include "constants.mqh"
 #include "mt5.mqh"
+#include "compile.mqh"
 #include "tools.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -50,6 +51,8 @@ public:
       add(new ToolPositionClose());
       add(new ToolPositionModify());
       add(new ToolSelectSymbol());
+
+      add(new ToolCompileMql5());
    }
 
    void toolList(CJAVal &json, bool isAnthropic = true)

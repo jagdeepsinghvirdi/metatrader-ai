@@ -464,3 +464,23 @@ Tool TOOL_SELECT_SYMBOL(
    toolSelectSymbolParams()
 );
 //+------------------------------------------------------------------+
+
+
+//+------------------------------------------------------------------+
+//| Parameters for compile_mql5                                      |
+//+------------------------------------------------------------------+
+Parameters *toolCompileMql5Params(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("mq5_path", "string", "The full path to the .mq5 file to compile", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| MQL5 Compile tool                                                |
+//+------------------------------------------------------------------+
+Tool TOOL_COMPILE_MQL5(
+   "compile_mql5",
+   "Compile an MQL5 file and return the log output.",
+   toolCompileMql5Params()
+);
+//+------------------------------------------------------------------+
