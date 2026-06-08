@@ -10,6 +10,7 @@
 #include "mt5.mqh"
 #include "compile.mqh"
 #include "tool.mqh"
+#include "indicators.mqh"
 
 #define BOOL_TO_STRING(value) ((value) ? "true" : "false")
 
@@ -49,6 +50,55 @@ ENUM_ORDER_TYPE StringToOrderType(string t)
    if (t == "ORDER_TYPE_SELL_LIMIT") return ORDER_TYPE_SELL_LIMIT;
    if (t == "ORDER_TYPE_BUY_STOP")   return ORDER_TYPE_BUY_STOP;
    return ORDER_TYPE_SELL_STOP;
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+int StringToAppliedPrice(string p)
+{
+   if (p == "PRICE_CLOSE")    return PRICE_CLOSE;
+   if (p == "PRICE_OPEN")     return PRICE_OPEN;
+   if (p == "PRICE_HIGH")     return PRICE_HIGH;
+   if (p == "PRICE_LOW")      return PRICE_LOW;
+   if (p == "PRICE_MEDIAN")   return PRICE_MEDIAN;
+   if (p == "PRICE_TYPICAL")  return PRICE_TYPICAL;
+   if (p == "PRICE_WEIGHTED") return PRICE_WEIGHTED;
+   return PRICE_CLOSE;
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+ENUM_MA_METHOD StringToMAMethod(string m)
+{
+   if (m == "MODE_SMA")  return MODE_SMA;
+   if (m == "MODE_EMA")  return MODE_EMA;
+   if (m == "MODE_SMMA") return MODE_SMMA;
+   if (m == "MODE_LWMA") return MODE_LWMA;
+   return MODE_SMA;
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+ENUM_STO_PRICE StringToStoPrice(string p)
+{
+   if (p == "STO_LOWHIGH")    return STO_LOWHIGH;
+   if (p == "STO_CLOSECLOSE") return STO_CLOSECLOSE;
+   return STO_LOWHIGH;
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+ENUM_APPLIED_VOLUME StringToVolumeType(string v)
+{
+#ifdef __MQL4__
+   if (v == "VOLUME_TICK") return VOLUME_TICK;
+   if (v == "VOLUME_REAL") return VOLUME_REAL;
+   return VOLUME_TICK;
+#else
+   if (v == "VOLUME_TICK") return VOLUME_TICK;
+   if (v == "VOLUME_REAL") return VOLUME_REAL;
+   return VOLUME_TICK;
+#endif
 }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -448,5 +498,369 @@ public:
    virtual string execute(CJAVal &json) override
    {      
        return compileMql5(json["mq5_path"].ToStr());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetMA : public Tool
+{
+public:
+   ToolGetMA() : Tool("get_ma", "Get a Moving Average value for a specific symbol, timeframe, and bar.", toolGetMAParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getMA(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["ma_period"].ToInt(),
+                (int)json["ma_shift"].ToInt(),
+                StringToMAMethod(json["ma_method"].ToStr()),
+                StringToAppliedPrice(json["applied_price"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetRSI : public Tool
+{
+public:
+   ToolGetRSI() : Tool("get_rsi", "Get the Relative Strength Index (RSI) value.", toolGetRSIParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getRSI(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["rsi_period"].ToInt(),
+                StringToAppliedPrice(json["applied_price"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetATR : public Tool
+{
+public:
+   ToolGetATR() : Tool("get_atr", "Get the Average True Range (ATR) value.", toolGetATRParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getATR(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["atr_period"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetADX : public Tool
+{
+public:
+   ToolGetADX() : Tool("get_adx", "Get the Average Directional Index (ADX) value.", toolGetADXParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getADX(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["adx_period"].ToInt(),
+                (ENUM_APPLIED_PRICE)StringToAppliedPrice(json["applied_price"].ToStr()),
+                (int)json["adx_mode"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetCustom : public Tool
+{
+public:
+   ToolGetCustom() : Tool("get_custom", "Get a value from a custom indicator.", toolGetCustomParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getCustom(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                json["indicator_name"].ToStr(),
+                (int)json["buffer"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetEnvelopes : public Tool
+{
+public:
+   ToolGetEnvelopes() : Tool("get_envelopes", "Get an Envelopes indicator value.", toolGetEnvelopesParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getEnvelopes(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["env_period"].ToInt(),
+                (int)json["ma_shift"].ToInt(),
+                StringToMAMethod(json["ma_method"].ToStr()),
+                StringToAppliedPrice(json["applied_price"].ToStr()),
+                json["deviation"].ToDbl(),
+                (int)json["env_mode"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetFractals : public Tool
+{
+public:
+   ToolGetFractals() : Tool("get_fractals", "Get a Fractals indicator value.", toolGetFractalsParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getFractals(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["fractal_mode"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetMACD : public Tool
+{
+public:
+   ToolGetMACD() : Tool("get_macd", "Get a MACD indicator value.", toolGetMACDParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getMACD(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["fast_period"].ToInt(),
+                (int)json["slow_period"].ToInt(),
+                (int)json["signal_period"].ToInt(),
+                (ENUM_APPLIED_PRICE)StringToAppliedPrice(json["applied_price"].ToStr()),
+                (int)json["macd_mode"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetAO : public Tool
+{
+public:
+   ToolGetAO() : Tool("get_ao", "Get the Awesome Oscillator value.", toolGetAOParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getAO(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetMomentum : public Tool
+{
+public:
+   ToolGetMomentum() : Tool("get_momentum", "Get the Momentum indicator value.", toolGetMomentumParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getMomentum(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["momentum_period"].ToInt(),
+                (ENUM_APPLIED_PRICE)StringToAppliedPrice(json["applied_price"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetWPR : public Tool
+{
+public:
+   ToolGetWPR() : Tool("get_wpr", "Get the Williams Percent Range (WPR) value.", toolGetWPRParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getWPR(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["wpr_period"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetBullsPower : public Tool
+{
+public:
+   ToolGetBullsPower() : Tool("get_bulls_power", "Get the Bulls Power indicator value.", toolGetBullsPowerParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getBullsPower(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["bull_period"].ToInt(),
+                (ENUM_APPLIED_PRICE)StringToAppliedPrice(json["applied_price"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetBearsPower : public Tool
+{
+public:
+   ToolGetBearsPower() : Tool("get_bears_power", "Get the Bears Power indicator value.", toolGetBearsPowerParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getBearsPower(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["bear_period"].ToInt(),
+                (ENUM_APPLIED_PRICE)StringToAppliedPrice(json["applied_price"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetATHR : public Tool
+{
+public:
+   ToolGetATHR() : Tool("get_athr", "Get the ATHR (composite MA/RSI trend score) value.", toolGetATHRParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getATHR(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetStochastic : public Tool
+{
+public:
+   ToolGetStochastic() : Tool("get_stochastic", "Get the Stochastic Oscillator value.", toolGetStochasticParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getStochastic(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["k_period"].ToInt(),
+                (int)json["d_period"].ToInt(),
+                (int)json["slow_period"].ToInt(),
+                StringToMAMethod(json["ma_method"].ToStr()),
+                StringToStoPrice(json["sto_price"].ToStr()),
+                (int)json["stoch_mode"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetCCI : public Tool
+{
+public:
+   ToolGetCCI() : Tool("get_cci", "Get the Commodity Channel Index (CCI) value.", toolGetCCIParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getCCI(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["cci_period"].ToInt(),
+                (ENUM_APPLIED_PRICE)StringToAppliedPrice(json["applied_price"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetADR : public Tool
+{
+public:
+   ToolGetADR() : Tool("get_adr", "Get the Average Daily Range (ADR) value.", toolGetADRParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getADR(
+                json["symbol"].ToStr(),
+                (int)json["adr_period"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetVWAP : public Tool
+{
+public:
+   ToolGetVWAP() : Tool("get_vwap", "Get the Volume Weighted Average Price (VWAP) value.", toolGetVWAPParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getVWAP(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                (int)json["vwap_period"].ToInt(),
+                (int)json["shift"].ToInt()
+             );
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolGetPVI : public Tool
+{
+public:
+   ToolGetPVI() : Tool("get_pvi", "Get the Positive Volume Index (PVI) value.", toolGetPVIParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return getPVI(
+                json["symbol"].ToStr(),
+                StringToTimeframe(json["timeframe"].ToStr()),
+                StringToVolumeType(json["volume_type"].ToStr()),
+                (int)json["shift"].ToInt()
+             );
    }
 };
