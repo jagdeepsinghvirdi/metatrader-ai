@@ -869,6 +869,217 @@ Tool TOOL_GET_PVI(
    toolGetPVIParams()
 );
 //+------------------------------------------------------------------+
+//| Parameters for file_copy                                         |
+//+------------------------------------------------------------------+
+Parameters *toolFileCopyParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("src",  "string", "Source file path", true));
+   p.add(new Property("dest", "string", "Destination file path", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| File copy tool                                                   |
+//+------------------------------------------------------------------+
+Tool TOOL_FILE_COPY(
+   "file_copy",
+   "Copy a file from source to destination.",
+   toolFileCopyParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for file_delete                                       |
+//+------------------------------------------------------------------+
+Parameters *toolFileDeleteParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("path", "string", "File path to delete", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| File delete tool                                                 |
+//+------------------------------------------------------------------+
+Tool TOOL_FILE_DELETE(
+   "file_delete",
+   "Delete a file by path.",
+   toolFileDeleteParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for file_exists                                       |
+//+------------------------------------------------------------------+
+Parameters *toolFileExistsParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("path", "string", "File path to check", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| File exists tool                                                 |
+//+------------------------------------------------------------------+
+Tool TOOL_FILE_EXISTS(
+   "file_exists",
+   "Check if a file exists at the specified path.",
+   toolFileExistsParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for file_move                                         |
+//+------------------------------------------------------------------+
+Parameters *toolFileMoveParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("src",  "string", "Source file path", true));
+   p.add(new Property("dest", "string", "Destination file path", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| File move tool                                                   |
+//+------------------------------------------------------------------+
+Tool TOOL_FILE_MOVE(
+   "file_move",
+   "Move a file from source to destination.",
+   toolFileMoveParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for file_read                                         |
+//+------------------------------------------------------------------+
+Parameters *toolFileReadParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("path", "string", "File path to read", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| File read tool                                                   |
+//+------------------------------------------------------------------+
+Tool TOOL_FILE_READ(
+   "file_read",
+   "Read the contents of a file.",
+   toolFileReadParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for file_write                                        |
+//+------------------------------------------------------------------+
+Parameters *toolFileWriteParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("path",      "string",  "File path to write to", true));
+   p.add(new Property("content",   "string",  "Content to write to the file", true));
+   p.add(new Property("index",     "integer", "Byte offset to start writing (optional, default 0)"));
+   p.add(new Property("overwrite", "boolean", "Whether to overwrite if file exists (optional, default true)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| File write tool                                                  |
+//+------------------------------------------------------------------+
+Tool TOOL_FILE_WRITE(
+   "file_write",
+   "Write content to a file.",
+   toolFileWriteParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_terminal_info                                 |
+//+------------------------------------------------------------------+
+Parameters *toolGetTerminalInfoParams(void)
+{
+   Parameters *p = new Parameters();
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get terminal info tool                                           |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_TERMINAL_INFO(
+   "get_terminal_info",
+   "Get information about the current MetaTrader terminal (OS, CPU, memory, build, connection status, etc.).",
+   toolGetTerminalInfoParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for chart_close                                       |
+//+------------------------------------------------------------------+
+Parameters *toolChartCloseParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("chart_id", "integer", "Chart ID to close (optional, 0 = current chart)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Chart close tool                                                 |
+//+------------------------------------------------------------------+
+Tool TOOL_CHART_CLOSE(
+   "chart_close",
+   "Close a chart by chart ID.",
+   toolChartCloseParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for chart_open                                        |
+//+------------------------------------------------------------------+
+Parameters *toolChartOpenParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",    "string", "The trading symbol", true));
+   p.add(new Property("timeframe", "string", "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Chart open tool                                                  |
+//+------------------------------------------------------------------+
+Tool TOOL_CHART_OPEN(
+   "chart_open",
+   "Open a new chart for a symbol and timeframe.",
+   toolChartOpenParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_chart_info                                    |
+//+------------------------------------------------------------------+
+Parameters *toolGetChartInfoParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("chart_id", "integer", "Chart ID to query (optional, 0 = current chart)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get chart info tool                                              |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_CHART_INFO(
+   "get_chart_info",
+   "Get detailed information about a chart including windows, indicators, prices, and dimensions.",
+   toolGetChartInfoParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_chart_indicator                               |
+//+------------------------------------------------------------------+
+Parameters *toolGetChartIndicatorParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("indicator_name", "string", "The indicator name to find on the chart", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get chart indicator tool                                         |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_CHART_INDICATOR(
+   "get_chart_indicator",
+   "Find an indicator on the chart and return its details (name, handle, window).",
+   toolGetChartIndicatorParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for remove_chart_indicator                            |
+//+------------------------------------------------------------------+
+Parameters *toolRemoveChartIndicatorParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("indicator_name", "string",  "The indicator name to remove", true));
+   p.add(new Property("chart_id",       "integer", "Chart ID (optional, 0 = current chart)"));
+   p.add(new Property("sub_window",     "integer", "Sub-window index (optional, default 0)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Remove chart indicator tool                                      |
+//+------------------------------------------------------------------+
+Tool TOOL_REMOVE_CHART_INDICATOR(
+   "remove_chart_indicator",
+   "Remove an indicator from the chart.",
+   toolRemoveChartIndicatorParams()
+);
+//+------------------------------------------------------------------+
 //| Parameters for compile_mql5                                      |
 //+------------------------------------------------------------------+
 Parameters *toolCompileMql5Params(void)
