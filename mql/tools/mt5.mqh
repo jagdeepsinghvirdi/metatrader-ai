@@ -24,6 +24,7 @@ static CPositionInfo mt5Posi;
 
 // forwards (in mql4 is shows import warning)
 #ifdef __MQL5__
+string base64Encode(const uchar &data[], int length);
 string getAccountInfo();
 string getBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const datetime fromDate, const datetime toDate);
 string getHistoryPosition(const ulong ticket);
@@ -48,6 +49,27 @@ bool positionModify(const string symbol, const ulong ticket, const double stopLo
 bool selectSymbol(const string symbol, const bool enable = true);
 #endif
 //+------------------------------------------------------------------+
+
+//+------------------------------------------------------------------+
+//| base64-encode raw bytes                                          |
+//+------------------------------------------------------------------+
+string base64Encode(const uchar &data[], int length)
+{
+   const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+   string result = "";
+   int i = 0;
+   while(i < length)
+   {
+      uint b0 = (uint)(uchar)data[i++];
+      uint b1 = (i < length) ? (uint)(uchar)data[i++] : 0;
+      uint b2 = (i < length) ? (uint)(uchar)data[i++] : 0;
+      result += StringSubstr(chars, (b0 >> 2) & 0x3F, 1);
+      result += StringSubstr(chars, ((b0 << 4) | (b1 >> 4)) & 0x3F, 1);
+      result += (i - 1 < length || i <= length + 1) ? StringSubstr(chars, ((b1 << 2) | (b2 >> 6)) & 0x3F, 1) : "=";
+      result += (i <= length) ? StringSubstr(chars, b2 & 0x3F, 1) : "=";
+   }
+   return result;
+}
 
 //+------------------------------------------------------------------+
 //| Get account information as a dictionary                          |
@@ -507,25 +529,23 @@ string getScreenshot(const string symbol = "", const ENUM_TIMEFRAMES timeframe =
    }
 // load screenshot into array
    int res;
-   char file[];
-   if (SCREENSHOT_FILENAME + " " + currencyPair + ".png" != NULL && SCREENSHOT_FILENAME + " " + currencyPair + ".png" != "")
+   uchar file[];
+   res = FileOpen(SCREENSHOT_FILENAME + " " + currencyPair + ".png", FILE_READ | FILE_BIN);
+   if(res == INVALID_HANDLE)
    {
-      res = FileOpen(SCREENSHOT_FILENAME + " " + currencyPair + ".png", FILE_READ | FILE_BIN);
-      if (res < 0)
-      {
-         PrintFormat("getScreenshot(%s,%d) failed to open screenshot file. Error %d", currencyPair, timeframe, GetLastError());
-         return "";
-      }
-
-      if (FileReadArray(res, file) != FileSize(res))
-      {
-         FileClose(res);
-         PrintFormat("getScreenshot(%s,%d) failed to read screenshot file. Error %d", currencyPair, timeframe, GetLastError());
-         return "";
-      }
-      FileClose(res);
+      PrintFormat("getScreenshot(%s,%d) failed to open screenshot file. Error %d", currencyPair, timeframe, GetLastError());
+      return "";
    }
-   return CharArrayToString(file);
+
+   ulong fileSize = FileSize(res);
+   if(FileReadArray(res, file, 0, (int)fileSize) != fileSize)
+   {
+      FileClose(res);
+      PrintFormat("getScreenshot(%s,%d) failed to read screenshot file. Error %d", currencyPair, timeframe, GetLastError());
+      return "";
+   }
+   FileClose(res);
+   return base64Encode(file, (int)fileSize);
 }
 
 //+------------------------------------------------------------------+
