@@ -1,4 +1,4 @@
-from . import mt5
+from . import mt5, build
 
 # set by agent.py on startup
 metatrader = None  # type: ignore  # mt5.MT5
@@ -13,6 +13,7 @@ def _build_tool_map() -> dict:
         )
 
     return {
+        # MT5 tools
         "close": metatrader.close,
         "get_account_info": metatrader.get_account_info,
         "get_history_position": metatrader.get_history_position,
@@ -40,6 +41,8 @@ def _build_tool_map() -> dict:
         "order_modify": metatrader.order_modify,
         "position_close": metatrader.position_close,
         "position_modify": metatrader.position_modify,
+        # build tool
+        "build_mql5": build.build_mql5,
     }
 
 
@@ -72,6 +75,7 @@ def get_tool_list(is_openai: bool = True) -> list:
     """Returns an OpenAI-formatted list of tools."""
     return (
         [
+            # MT5 tools
             mt5.TOOL_CLOSE.json_openai,
             mt5.TOOL_GET_ACCOUNT_INFO.json_openai,
             mt5.TOOL_GET_HISTORY_POSITION.json_openai,
@@ -99,9 +103,12 @@ def get_tool_list(is_openai: bool = True) -> list:
             mt5.TOOL_ORDER_MODIFY.json_openai,
             mt5.TOOL_POSITION_CLOSE.json_openai,
             mt5.TOOL_POSITION_MODIFY.json_openai,
+            # build tool
+            build.TOOL_BUILD_MQL5.json_openai,
         ]
         if is_openai
         else [
+            # MT5 tools
             mt5.TOOL_CLOSE.json_anthropic,
             mt5.TOOL_GET_ACCOUNT_INFO.json_anthropic,
             mt5.TOOL_GET_HISTORY_POSITION.json_anthropic,
@@ -129,5 +136,7 @@ def get_tool_list(is_openai: bool = True) -> list:
             mt5.TOOL_ORDER_MODIFY.json_anthropic,
             mt5.TOOL_POSITION_CLOSE.json_anthropic,
             mt5.TOOL_POSITION_MODIFY.json_anthropic,
+            # build tool
+            build.TOOL_BUILD_MQL5.json_anthropic,
         ]
     )
