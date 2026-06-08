@@ -31,7 +31,7 @@ int ShellExecuteW(int hWnd, string lpOperation, string lpFile, string lpParamete
 //+------------------------------------------------------------------+
 //| Compile an .mq5 expert advisor; provide path, returns log output |
 //+------------------------------------------------------------------+
-string compileFile(string mq5_path)
+string compileMql5(string mq5_path)
 {
    const int fileExtensionPosition = StringFind(mq5_path, ".mq5");
    if(fileExtensionPosition < 0) return "[Build Error]: Invalid file type. Expected `.mq5`";

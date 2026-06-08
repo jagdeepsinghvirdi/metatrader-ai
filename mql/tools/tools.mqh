@@ -447,6 +447,6 @@ public:
    ToolCompileMql5() : Tool("compile_mql5", "Compile an MQL5 file and return any compilation errors.", toolCompileMql5Params()) {}
    virtual string execute(CJAVal &json) override
    {      
-       return compileMql(json["mq5_path"].ToStr());
+       return compileMql5(json["mq5_path"].ToStr());
    }
 };
