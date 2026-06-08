@@ -467,6 +467,408 @@ Tool TOOL_SELECT_SYMBOL(
 
 
 //+------------------------------------------------------------------+
+//| Parameters for get_ma                                            |
+//+------------------------------------------------------------------+
+Parameters *toolGetMAParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("ma_period",      "integer", "The moving average period", true));
+   p.add(new Property("ma_shift",       "integer", "The MA shift", true));
+   p.add(new Property("ma_method",      "string",  "The MA method: MODE_SMA, MODE_EMA, MODE_SMMA, MODE_LWMA", true));
+   p.add(new Property("applied_price",  "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get MA tool                                                      |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_MA(
+   "get_ma",
+   "Get a Moving Average value for a specific symbol, timeframe, and bar.",
+   toolGetMAParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_rsi                                           |
+//+------------------------------------------------------------------+
+Parameters *toolGetRSIParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("rsi_period",     "integer", "The RSI period", true));
+   p.add(new Property("applied_price",  "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get RSI tool                                                     |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_RSI(
+   "get_rsi",
+   "Get the Relative Strength Index (RSI) value.",
+   toolGetRSIParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_atr                                           |
+//+------------------------------------------------------------------+
+Parameters *toolGetATRParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("atr_period",     "integer", "The ATR period", true));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get ATR tool                                                     |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_ATR(
+   "get_atr",
+   "Get the Average True Range (ATR) value.",
+   toolGetATRParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_adx                                           |
+//+------------------------------------------------------------------+
+Parameters *toolGetADXParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("adx_period",     "integer", "The ADX period", true));
+   p.add(new Property("applied_price",  "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("adx_mode",       "integer", "ADX mode (0 = main, 1 = plusDI, 2 = minusDI)"));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get ADX tool                                                     |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_ADX(
+   "get_adx",
+   "Get the Average Directional Index (ADX) value.",
+   toolGetADXParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_custom                                        |
+//+------------------------------------------------------------------+
+Parameters *toolGetCustomParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",          "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",       "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("indicator_name",  "string",  "The custom indicator file name (without path)", true));
+   p.add(new Property("buffer",          "integer", "The indicator buffer index", true));
+   p.add(new Property("shift",           "integer", "The bar index (0 = current bar)", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get custom tool                                                  |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_CUSTOM(
+   "get_custom",
+   "Get a value from a custom indicator.",
+   toolGetCustomParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_envelopes                                     |
+//+------------------------------------------------------------------+
+Parameters *toolGetEnvelopesParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("env_period",     "integer", "The envelopes period", true));
+   p.add(new Property("ma_shift",       "integer", "The MA shift", true));
+   p.add(new Property("ma_method",      "string",  "The MA method: MODE_SMA, MODE_EMA, MODE_SMMA, MODE_LWMA", true));
+   p.add(new Property("applied_price",  "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("deviation",      "number",  "Deviation percentage", true));
+   p.add(new Property("env_mode",       "integer", "Envelope mode (0 = upper, 1 = lower)"));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get Envelopes tool                                               |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_ENVELOPES(
+   "get_envelopes",
+   "Get an Envelopes indicator value.",
+   toolGetEnvelopesParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_fractals                                      |
+//+------------------------------------------------------------------+
+Parameters *toolGetFractalsParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("fractal_mode",   "integer", "Fractal mode (0 = upper, 1 = lower)"));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get Fractals tool                                                |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_FRACTALS(
+   "get_fractals",
+   "Get a Fractals indicator value.",
+   toolGetFractalsParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_macd                                          |
+//+------------------------------------------------------------------+
+Parameters *toolGetMACDParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("fast_period",    "integer", "Fast EMA period", true));
+   p.add(new Property("slow_period",    "integer", "Slow EMA period", true));
+   p.add(new Property("signal_period",  "integer", "Signal line period", true));
+   p.add(new Property("applied_price",  "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("macd_mode",      "integer", "MACD mode (0 = main, 1 = signal)"));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get MACD tool                                                    |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_MACD(
+   "get_macd",
+   "Get a MACD indicator value.",
+   toolGetMACDParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_ao                                            |
+//+------------------------------------------------------------------+
+Parameters *toolGetAOParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",    "string",  "The trading symbol", true));
+   p.add(new Property("timeframe", "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("shift",     "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get AO tool                                                      |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_AO(
+   "get_ao",
+   "Get the Awesome Oscillator value.",
+   toolGetAOParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_momentum                                      |
+//+------------------------------------------------------------------+
+Parameters *toolGetMomentumParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",           "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",        "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("momentum_period",  "integer", "The momentum period", true));
+   p.add(new Property("applied_price",    "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("shift",            "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get Momentum tool                                                |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_MOMENTUM(
+   "get_momentum",
+   "Get the Momentum indicator value.",
+   toolGetMomentumParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_wpr                                           |
+//+------------------------------------------------------------------+
+Parameters *toolGetWPRParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",     "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",  "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("wpr_period", "integer", "The WPR period", true));
+   p.add(new Property("shift",      "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get WPR tool                                                     |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_WPR(
+   "get_wpr",
+   "Get the Williams Percent Range (WPR) value.",
+   toolGetWPRParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_bulls_power                                   |
+//+------------------------------------------------------------------+
+Parameters *toolGetBullsPowerParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("bull_period",    "integer", "The Bulls Power period", true));
+   p.add(new Property("applied_price",  "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get Bulls Power tool                                             |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_BULLS_POWER(
+   "get_bulls_power",
+   "Get the Bulls Power indicator value.",
+   toolGetBullsPowerParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_bears_power                                   |
+//+------------------------------------------------------------------+
+Parameters *toolGetBearsPowerParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("bear_period",    "integer", "The Bears Power period", true));
+   p.add(new Property("applied_price",  "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get Bears Power tool                                             |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_BEARS_POWER(
+   "get_bears_power",
+   "Get the Bears Power indicator value.",
+   toolGetBearsPowerParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_athr                                          |
+//+------------------------------------------------------------------+
+Parameters *toolGetATHRParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",    "string",  "The trading symbol", true));
+   p.add(new Property("timeframe", "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("shift",     "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get ATHR tool                                                    |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_ATHR(
+   "get_athr",
+   "Get the ATHR (composite MA/RSI trend score) value.",
+   toolGetATHRParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_stochastic                                    |
+//+------------------------------------------------------------------+
+Parameters *toolGetStochasticParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("k_period",       "integer", "%K period", true));
+   p.add(new Property("d_period",       "integer", "%D period", true));
+   p.add(new Property("slow_period",    "integer", "Slow period", true));
+   p.add(new Property("ma_method",      "string",  "The MA method: MODE_SMA, MODE_EMA, MODE_SMMA, MODE_LWMA", true));
+   p.add(new Property("sto_price",      "string",  "Stochastic price: STO_LOWHIGH, STO_CLOSECLOSE", true));
+   p.add(new Property("stoch_mode",     "integer", "Stochastic mode (0 = main, 1 = signal)"));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get Stochastic tool                                              |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_STOCHASTIC(
+   "get_stochastic",
+   "Get the Stochastic Oscillator value.",
+   toolGetStochasticParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_cci                                           |
+//+------------------------------------------------------------------+
+Parameters *toolGetCCIParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",         "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("cci_period",     "integer", "The CCI period", true));
+   p.add(new Property("applied_price",  "string",  "Applied price: PRICE_CLOSE, PRICE_OPEN, PRICE_HIGH, PRICE_LOW, PRICE_MEDIAN, PRICE_TYPICAL, PRICE_WEIGHTED", true));
+   p.add(new Property("shift",          "integer", "The bar index (0 = current bar)"));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get CCI tool                                                     |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_CCI(
+   "get_cci",
+   "Get the Commodity Channel Index (CCI) value.",
+   toolGetCCIParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_adr                                           |
+//+------------------------------------------------------------------+
+Parameters *toolGetADRParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",     "string",  "The trading symbol", true));
+   p.add(new Property("adr_period", "integer", "The ADR period (in days)", true));
+   p.add(new Property("shift",      "integer", "The bar index (0 = current bar)", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get ADR tool                                                     |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_ADR(
+   "get_adr",
+   "Get the Average Daily Range (ADR) value.",
+   toolGetADRParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_vwap                                          |
+//+------------------------------------------------------------------+
+Parameters *toolGetVWAPParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",      "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",   "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("vwap_period", "integer", "The VWAP period", true));
+   p.add(new Property("shift",       "integer", "The bar index (0 = current bar)", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get VWAP tool                                                    |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_VWAP(
+   "get_vwap",
+   "Get the Volume Weighted Average Price (VWAP) value.",
+   toolGetVWAPParams()
+);
+//+------------------------------------------------------------------+
+//| Parameters for get_pvi                                           |
+//+------------------------------------------------------------------+
+Parameters *toolGetPVIParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("symbol",      "string",  "The trading symbol", true));
+   p.add(new Property("timeframe",   "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
+   p.add(new Property("volume_type", "string",  "Volume type: VOLUME_TICK or VOLUME_REAL", true));
+   p.add(new Property("shift",       "integer", "The bar index (0 = current bar)", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Get PVI tool                                                     |
+//+------------------------------------------------------------------+
+Tool TOOL_GET_PVI(
+   "get_pvi",
+   "Get the Positive Volume Index (PVI) value.",
+   toolGetPVIParams()
+);
+//+------------------------------------------------------------------+
 //| Parameters for compile_mql5                                      |
 //+------------------------------------------------------------------+
 Parameters *toolCompileMql5Params(void)

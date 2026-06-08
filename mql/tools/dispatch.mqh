@@ -52,6 +52,26 @@ public:
       add(new ToolPositionModify());
       add(new ToolSelectSymbol());
 
+      add(new ToolGetMA());
+      add(new ToolGetRSI());
+      add(new ToolGetATR());
+      add(new ToolGetADX());
+      add(new ToolGetCustom());
+      add(new ToolGetEnvelopes());
+      add(new ToolGetFractals());
+      add(new ToolGetMACD());
+      add(new ToolGetAO());
+      add(new ToolGetMomentum());
+      add(new ToolGetWPR());
+      add(new ToolGetBullsPower());
+      add(new ToolGetBearsPower());
+      add(new ToolGetATHR());
+      add(new ToolGetStochastic());
+      add(new ToolGetCCI());
+      add(new ToolGetADR());
+      add(new ToolGetVWAP());
+      add(new ToolGetPVI());
+
       add(new ToolCompileMql5());
    }
 
