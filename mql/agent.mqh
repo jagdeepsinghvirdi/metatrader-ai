@@ -57,12 +57,13 @@ private:
    string    m_headers;     // Content-Type + Authorization headers
    bool      m_initialized; // is initialized
 
-   string loadContextFiles();                              // Read and concatenate all CONTEXT_FILES
-   bool initialize();                                      // Load system prompt and context files
-   string readFile(string path);                           // Read a text file
-   void pushMessage(string role, string content);          // Append a standard role/content message
-   void pushRaw(string serialized);                        // Append a pre-serialized JSON object (used for assistant messages with tool_calls)
-   void pushToolResult(string toolCallId, string content); // Append a tool result message
+   string loadContextFiles();                                   // Read and concatenate all CONTEXT_FILES
+   bool initialize();                                           // Load system prompt and context files
+   string readFile(string path);                                // Read a text file
+   void pushMessage(string role, string content);               // Append a standard role/content message
+   void pushRaw(string serialized);                             // Append a pre-serialized JSON object (used for assistant messages with tool_calls)
+   void pushToolResult(string toolCallId, string content);      // Append a tool result message
+   void pushToolResultImage(string toolCallId, string b64data); // Append a tool result image
 };
 
 //+------------------------------------------------------------------+
@@ -182,6 +183,16 @@ void Agent::pushToolResult(string toolCallId, string content)
 }
 
 //+------------------------------------------------------------------+
+//| Append a tool result image                                       |
+//+------------------------------------------------------------------+
+void Agent::pushToolResultImage(string toolCallId, string b64data)
+{
+   pushToolResult(toolCallId, "Screenshot captured.");
+   string imgContent = "[{\"type\":\"text\",\"text\":\"Here is the chart screenshot.\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64," + b64data + "\"}}]";
+   pushRaw("{\"role\":\"user\",\"content\":" + imgContent + "}");
+}
+
+//+------------------------------------------------------------------+
 //| Process one user turn, return the assistant's final text response|
 //+------------------------------------------------------------------+
 string Agent::run(string prompt)
@@ -254,7 +265,14 @@ string Agent::run(string prompt)
          string result = m_dispatch.execute(name, args);
          Print("[Agent] Tool ", name, " returned: ", result);
 
-         pushToolResult(callId, result);
+         if(name == "get_screenshot")
+         {
+            pushToolResultImage(callId, result);
+         }
+         else
+         {
+            pushToolResult(callId, result);
+         }
       }
    }
 
