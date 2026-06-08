@@ -8,6 +8,7 @@
 #property strict
 #include "constants.mqh"
 #include "mt5.mqh"
+#include "compile.mqh"
 #include "tool.mqh"
 
 #define BOOL_TO_STRING(value) ((value) ? "true" : "false")
@@ -435,3 +436,17 @@ public:
    }
 };
 //+------------------------------------------------------------------+
+
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolCompileMql5 : public Tool
+{
+public:
+   ToolCompileMql5() : Tool("compile_mql5", "Compile an MQL5 file and return any compilation errors.", toolCompileMql5Params()) {}
+   virtual string execute(CJAVal &json) override
+   {      
+       return compileMql(json["mq5_path"].ToStr());
+   }
+};
