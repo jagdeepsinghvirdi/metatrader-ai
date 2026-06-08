@@ -10,17 +10,35 @@
 
 #include <metatrader-ai/mql/agent.mqh>
 
+input string inpApiKey = "sk-";                                  // Your OpenAI Key
+input string inpPrompt = "What do you see on my current chart?"; // Prompt
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void OnStart()
+int OnInit()
 {
+   if(StringLen(inpApiKey) <= 3)
+   {
+      Alert("Wrong API Key! Grab one from \"platform.openai.com/api-keys\"");
+      return INIT_FAILED;
+   }
+
+   OPENAI_API_KEY = inpApiKey;
+
    Agent *agent = new Agent();
 
-// get a response
-   string response = agent.run("What is today's daily high of ETHUSD?");
+   const string response = agent.run(inpPrompt);
    Print("[Agent] ", response);
 
    delete agent; // clean up the agent
+   ExpertRemove();
+   return INIT_SUCCEEDED;
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+
 }
 //+------------------------------------------------------------------+
