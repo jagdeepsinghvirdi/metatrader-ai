@@ -52,10 +52,11 @@ public:
    string run(string prompt); // Process one user turn and return the assistant's final text response
 
 private:
-   CJAVal    m_messages;    // persistent conversation history (jtARRAY)
-   Dispatch *m_dispatch;    // tool dispatcher
-   string    m_headers;     // Content-Type + Authorization headers
-   bool      m_initialized; // is initialized
+   CJAVal    m_messages;        // persistent conversation history (jtARRAY)
+   Dispatch *m_dispatch;        // tool dispatcher
+   string    m_headers;         // Content-Type + Authorization headers
+   bool      m_initialized;     // is initialized
+   string    m_deferredImageMsg;// user-role image message deferred until after all tool results
 
    string loadContextFiles();                                   // Read and concatenate all CONTEXT_FILES
    bool initialize();                                           // Load system prompt and context files
@@ -75,6 +76,7 @@ Agent::Agent()
    m_dispatch        = new Dispatch();
    m_initialized     = initialize();
    m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
+   m_deferredImageMsg = "";
 #ifdef __MQL4__
    if(!FolderCreate("metatrader-ai", FILE_COMMON)) Print("Failed to create metatrader-ai folder");
    if(!FolderCreate("metatrader-ai\\context", FILE_COMMON)) Print("Failed to create metatrader-ai\\context folder");
@@ -183,13 +185,14 @@ void Agent::pushToolResult(string toolCallId, string content)
 }
 
 //+------------------------------------------------------------------+
-//| Append a tool result image                                       |
+//| Append a tool result — defers the user-role image message        |
+//| so it can be flushed after all tool results are committed        |
 //+------------------------------------------------------------------+
 void Agent::pushToolResultImage(string toolCallId, string b64data)
 {
    pushToolResult(toolCallId, "Screenshot captured.");
    string imgContent = "[{\"type\":\"text\",\"text\":\"Here is the chart screenshot.\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64," + b64data + "\"}}]";
-   pushRaw("{\"role\":\"user\",\"content\":" + imgContent + "}");
+   m_deferredImageMsg = "{\"role\":\"user\",\"content\":" + imgContent + "}";
 }
 
 //+------------------------------------------------------------------+
@@ -247,6 +250,7 @@ string Agent::run(string prompt)
       pushRaw(msgSerialized);
 
       // Execute each tool call and append its result
+      m_deferredImageMsg = "";
       int n = ArraySize(message["tool_calls"].m_e);
       for (int i = 0; i < n; i++)
       {
@@ -266,13 +270,15 @@ string Agent::run(string prompt)
          Print("[Agent] Tool ", name, " returned: ", result);
 
          if(name == "get_screenshot")
-         {
             pushToolResultImage(callId, result);
-         }
          else
-         {
             pushToolResult(callId, result);
-         }
+      }
+      // Flush deferred image message after ALL tool results are committed
+      if(m_deferredImageMsg != "")
+      {
+         pushRaw(m_deferredImageMsg);
+         m_deferredImageMsg = "";
       }
    }
 
