@@ -50,6 +50,25 @@ response = agent.run("What is the daily high of ETHUSD?")
 print(response)
 ```
 
+Launch the desktop GUI (Chat + Info tabs):
+
+```python
+from metatrader_ai.app import launch
+from metatrader_ai.agent import Agent
+
+agent = Agent(API_KEY, ACCOUNT_LOGIN, ACCOUNT_PASS, BROKER_NAME)
+launch(agent=agent)
+```
+
+Or without an agent (info-only mode):
+
+```python
+from metatrader_ai.app import launch
+launch()
+```
+
+The GUI features a Chat tab for conversing with the AI assistant and an Info tab displaying terminal, symbol, and account details from MetaTrader 5.
+
 Use the command line entrypoint:
 
 ```bash
