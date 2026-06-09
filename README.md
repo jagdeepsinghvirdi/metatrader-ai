@@ -1,21 +1,25 @@
 # MetaTrader AI
 An AI-powered trading assistant for MetaTrader 4 and MetaTrader 5! Now you can use AI in your trading strategies.
 
-The Assistant can:
-- Open, close, and modify positions and pending orders
-- Modify stop loss, take profit, and entry prices
-- Fetch current positions, pending orders, and deal history
-- Get account info (balance, equity, margin, leverage, currency, etc.)
-- Get symbol info (bid, ask, spread, digits, lot limits, tick value)
-- Pull OHLCV bars and individual bar prices (open, high, low, close)
-- Calculate pip values and risk-based lot sizing
-- Compute 20+ technical indicators: MA, RSI, ATR, ADX, MACD, Stochastic, CCI, WPR, Momentum, Envelopes, Fractals, Bulls/Bears Power, VWAP, PVI, AO, ADR, ATHR, and custom indicators (MQL only)
-- Take chart screenshots and analyze them (MQL only)
-- Open, close, and inspect charts (MQL only)
-- Enable/disable symbols in Market Watch (MQL only)
-- Get terminal info: OS, CPU, memory, build, connection status (MQL only)
-- Read, write, copy, move, delete files (MQL only)
-- Compile MQL5 files
+## Features
+
+| Feature | Python | MQL |
+|---------|--------|-----|
+| Open, close, modify positions & orders | ✅ | ✅ |
+| Modify SL, TP, and entry prices | ✅ | ✅ |
+| Fetch positions, orders, and deal history | ✅ | ✅ |
+| Account info (balance, equity, margin, etc.) | ✅ | ✅ |
+| Symbol info (bid, ask, spread, digits, lots) | ✅ | ✅ |
+| OHLCV bars and individual bar prices | ✅ | ✅ |
+| Pip value and risk-based lot sizing | ✅ | ✅ |
+| MQL5 file compilation | ✅ | ✅ |
+| 20+ technical indicators (MA, RSI, ATR, ADX, MACD, Stochastic, CCI, WPR, Momentum, Envelopes, Fractals, Bulls/Bears Power, VWAP, PVI, AO, ADR, ATHR, custom) | — | ✅ |
+| Chart screenshots and analysis | — | ✅ |
+| Open, close, and inspect charts | — | ✅ |
+| Enable/disable symbols in Market Watch | — | ✅ |
+| Terminal info (OS, CPU, memory, build, connection) | — | ✅ |
+| File operations (read, write, copy, move, delete) | — | ✅ |
+| Chat GUI (desktop or on-chart panel) | ✅ Desktop | ✅ On-chart |
 
 ## Requirements
 - Windows operating system (for Python integration, MQL works on all platforms that MetaTrader supports)
