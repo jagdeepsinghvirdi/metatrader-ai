@@ -11,7 +11,7 @@ The Assistant can:
 - Screenshot charts and analyze them (MQL only)
 
 ## Requirements
-- Windows or Linux operating system
+- Windows operating system (for Python integration, MQL works on all platforms that MetaTrader supports)
 - MetaTrader 4 or MetaTrader 5
 - Python 3.9.7 or higher
 - OpenAI API key
@@ -89,7 +89,7 @@ git clone https://github.com/jblanked/metatrader-ai.git
 ```
 ni secrets.mqh 
 ```
-**Linux:**
+**Mac/Linux:**
 ```bash
 touch secrets.mqh
 ```
@@ -114,6 +114,8 @@ void OnStart()
    delete agent; // clean up the agent
 }
 ```
+
+Or you can compile and run the `app.mq5` file (within the `metatrader-ai/mql` folder) to see a demo of the AI assistant in action. It will create a panel on your chart where you can type in prompts and see the AI's responses.
 
 
 ## Notes
