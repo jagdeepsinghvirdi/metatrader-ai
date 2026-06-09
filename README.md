@@ -1,19 +1,30 @@
 # MetaTrader AI
 An AI-powered trading assistant for MetaTrader 4 and MetaTrader 5! Now you can use AI in your trading strategies.
 
-The Assistant can:
-- Open positions and pending orders
-- Close positions
-- Delete pending orders
-- Modify stop loss and take profit levels
-- Get current and historical price data
-- Get account information and trading history
-- Screenshot charts and analyze them (MQL only)
+## Features
+
+| Feature | Python | MQL |
+|---------|--------|-----|
+| Open, close, modify positions & orders | ✅ | ✅ |
+| Modify SL, TP, and entry prices | ✅ | ✅ |
+| Fetch positions, orders, and deal history | ✅ | ✅ |
+| Account info (balance, equity, margin, etc.) | ✅ | ✅ |
+| Symbol info (bid, ask, spread, digits, lots) | ✅ | ✅ |
+| OHLCV bars and individual bar prices | ✅ | ✅ |
+| Pip value and risk-based lot sizing | ✅ | ✅ |
+| MQL5 file compilation | ✅ | ✅ |
+| 20+ technical indicators (MA, RSI, ATR, ADX, MACD, Stochastic, CCI, WPR, Momentum, Envelopes, Fractals, Bulls/Bears Power, VWAP, PVI, AO, ADR, ATHR, custom) | — | ✅ |
+| Chart screenshots and analysis | — | ✅ |
+| Open, close, and inspect charts | — | ✅ |
+| Enable/disable symbols in Market Watch | — | ✅ |
+| Terminal info (OS, CPU, memory, build, connection) | — | ✅ |
+| File operations (read, write, copy, move, delete) | — | ✅ |
+| Chat GUI (desktop or on-chart panel) | ✅ Desktop | ✅ On-chart |
 
 ## Requirements
-- Windows or Linux operating system
-- MetaTrader 4 or MetaTrader 5
-- Python 3.9.7 or higher
+- Windows operating system (for Python integration, MQL works on all platforms that MetaTrader supports)
+- MetaTrader 5 and Python 3.9.7 or higher for Python integration
+- MetaTrader 4 or MetaTrader 5 for MQL integration
 - OpenAI API key
 
 ## Installation
@@ -89,7 +100,7 @@ git clone https://github.com/jblanked/metatrader-ai.git
 ```
 ni secrets.mqh 
 ```
-**Linux:**
+**Mac/Linux:**
 ```bash
 touch secrets.mqh
 ```
@@ -114,6 +125,8 @@ void OnStart()
    delete agent; // clean up the agent
 }
 ```
+
+Or you can compile and run the `app.mq5` file (within the `metatrader-ai/mql` folder) to see a demo of the AI assistant in action. It will create a panel on your chart where you can type in prompts and see the AI's responses.
 
 
 ## Notes

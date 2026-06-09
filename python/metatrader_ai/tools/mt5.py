@@ -1121,28 +1121,30 @@ TOOL_GET_HISTORY_POSITION = Tool(
 TOOL_GET_HISTORY_POSITIONS = Tool(
     name="get_history_positions",
     description="Get historical positions, optionally filtered by symbol, magic number, and date range. Returns a list of dictionaries with ticket, time (ISO 8601 UTC), type, volume, magic number, lot size, price, commission, swap, profit, fee, symbol, and comment for each deal.",
-    parameters=[
-        Property(
-            name="symbol",
-            type="string",
-            description="Optional symbol filter, e.g. EURUSD.",
-        ),
-        Property(
-            name="magic",
-            type="integer",
-            description="Optional magic number filter for Expert Advisors.",
-        ),
-        Property(
-            name="from_date",
-            type="string",
-            description="Optional start date filter in ISO 8601 format, e.g. 2023-01-01T00:00:00Z. Defaults to January 1st of the current year if not provided.",
-        ),
-        Property(
-            name="to_date",
-            type="string",
-            description="Optional end date filter in ISO 8601 format, e.g. 2023-12-31T23:59:59Z. Defaults to the current date and time if not provided.",
-        ),
-    ],
+    parameters=Parameters(
+        properties=[
+            Property(
+                name="symbol",
+                type="string",
+                description="Optional symbol filter, e.g. EURUSD.",
+            ),
+            Property(
+                name="magic",
+                type="integer",
+                description="Optional magic number filter for Expert Advisors.",
+            ),
+            Property(
+                name="from_date",
+                type="string",
+                description="Optional start date filter in ISO 8601 format, e.g. 2023-01-01T00:00:00Z. Defaults to January 1st of the current year if not provided.",
+            ),
+            Property(
+                name="to_date",
+                type="string",
+                description="Optional end date filter in ISO 8601 format, e.g. 2023-12-31T23:59:59Z. Defaults to the current date and time if not provided.",
+            ),
+        ]
+    ),
 )
 
 TOOL_GET_ORDER = Tool(
