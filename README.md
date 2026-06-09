@@ -2,18 +2,25 @@
 An AI-powered trading assistant for MetaTrader 4 and MetaTrader 5! Now you can use AI in your trading strategies.
 
 The Assistant can:
-- Open positions and pending orders
-- Close positions
-- Delete pending orders
-- Modify stop loss and take profit levels
-- Get current and historical price data
-- Get account information and trading history
-- Screenshot charts and analyze them (MQL only)
+- Open, close, and modify positions and pending orders
+- Modify stop loss, take profit, and entry prices
+- Fetch current positions, pending orders, and deal history
+- Get account info (balance, equity, margin, leverage, currency, etc.)
+- Get symbol info (bid, ask, spread, digits, lot limits, tick value)
+- Pull OHLCV bars and individual bar prices (open, high, low, close)
+- Calculate pip values and risk-based lot sizing
+- Compute 20+ technical indicators: MA, RSI, ATR, ADX, MACD, Stochastic, CCI, WPR, Momentum, Envelopes, Fractals, Bulls/Bears Power, VWAP, PVI, AO, ADR, ATHR, and custom indicators (MQL only)
+- Take chart screenshots and analyze them (MQL only)
+- Open, close, and inspect charts (MQL only)
+- Enable/disable symbols in Market Watch (MQL only)
+- Get terminal info: OS, CPU, memory, build, connection status (MQL only)
+- Read, write, copy, move, delete files (MQL only)
+- Compile MQL5 files
 
 ## Requirements
 - Windows operating system (for Python integration, MQL works on all platforms that MetaTrader supports)
-- MetaTrader 4 or MetaTrader 5
-- Python 3.9.7 or higher
+- MetaTrader 5 and Python 3.9.7 or higher for Python integration
+- MetaTrader 4 or MetaTrader 5 for MQL integration
 - OpenAI API key
 
 ## Installation
