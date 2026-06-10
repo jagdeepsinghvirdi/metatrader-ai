@@ -29,15 +29,62 @@ An AI-powered trading assistant for MetaTrader 4 and MetaTrader 5! Now you can u
 
 ## Installation
 
-### Python Package Usage (pip)
-
-Install from PyPI:
+### Python
 
 ```bash
 pip install metatrader-ai
 ```
 
-Use the convenience function (one-shot if prompt is provided, interactive mode if omitted):
+### MQL
+
+1. Navigate to MetaTrader's data folder (File → Open Data Folder), then:
+```bash
+cd "C:\Users\YourUsername\AppData\Roaming\MetaQuotes\Terminal\YourTerminalID"
+cd MQL4 # or MQL5
+cd Include
+```
+2. Clone the repo into the Includes folder:
+```bash
+git clone https://github.com/jblanked/metatrader-ai.git
+```
+3. Create `secrets.mqh`:
+
+**Windows:**
+```
+ni secrets.mqh
+```
+**Mac/Linux:**
+```bash
+touch secrets.mqh
+```
+
+Add your OpenAI API key to `secrets.mqh`:
+```c++
+#define OPENAI_API_KEY "your_openai_api_key"
+```
+
+## Usage
+
+### Desktop GUI (Python)
+
+```python
+from metatrader_ai.app import launch
+from metatrader_ai.agent import Agent
+
+agent = Agent(API_KEY, ACCOUNT_LOGIN, ACCOUNT_PASS, BROKER_NAME)
+launch(agent=agent)
+```
+
+Without an agent (info-only mode):
+
+```python
+from metatrader_ai.app import launch
+launch()
+```
+
+The Chat tab lets you converse with the AI assistant about your positions, market analysis, and trading strategies. The Info tab displays terminal, symbol, and account details from MetaTrader 5.
+
+### One-shot Function
 
 ```python
 from metatrader_ai.agent import run
@@ -51,7 +98,7 @@ result = run(
 )
 ```
 
-Use the class API for multi-turn conversations:
+### Multi-turn Class API
 
 ```python
 from metatrader_ai.agent import Agent
@@ -61,7 +108,7 @@ response = agent.run("What is the daily high of ETHUSD?")
 print(response)
 ```
 
-Use the command line entrypoint:
+### Command Line
 
 ```bash
 metatrader-ai \
@@ -71,62 +118,27 @@ metatrader-ai \
    --broker-name "$BROKER_NAME"
 ```
 
-Optional single prompt mode:
+Single prompt mode:
 
 ```bash
 metatrader-ai --prompt "Show account info" ...
 ```
 
-### MQL
-1. Open up Terminal and navigate to where MetaTrader's data folder is located. You can find this by going to MetaTrader, clicking on File > Open Data Folder. Then copy and paste that path into your terminal:
-```bash
-cd "C:\Users\YourUsername\AppData\Roaming\MetaQuotes\Terminal\YourTerminalID"
-```
-2. Navigate to the MQL4 or MQL5 folder, depending on which version of MetaTrader you are using:
-```bash
-cd MQL4
-```
-3. Navigate into the Includes folder:
-```bash
-cd Include
-```
-4. Clone (or download) this repository into the Includes folder:
-```bash
-git clone https://github.com/jblanked/metatrader-ai.git
-```
-5. Create a file called `secrets.mqh`
+### MQL (In-Editor)
 
-**Windows:**
-```
-ni secrets.mqh 
-```
-**Mac/Linux:**
-```bash
-touch secrets.mqh
-```
-6. Add your OpenAI API key to the `secrets.mqh` file:
-```c++
-#define OPENAI_API_KEY "your_openai_api_key"
-```
-Or define `OPENAI_API_KEY` in your own code before including the `agent.mqh` file.
-
-7. Open up MetaTrader and you should see the `metatrader-ai` folder in the Navigator under Include. You can now include the `agent.mqh` file in your MQL scripts to use the AI functions:
 ```c++
 #include <metatrader-ai/mql/agent.mqh>
 
 void OnStart()
 {
    Agent *agent = new Agent();
-
-    // get a response
    string response = agent.run("What is the daily high of ETHUSD?");
    Print("[Agent] ", response);
-
-   delete agent; // clean up the agent
+   delete agent;
 }
 ```
 
-Or you can compile and run the `app.mq5` file (within the `metatrader-ai/mql` folder) to see a demo of the AI assistant in action. It will create a panel on your chart where you can type in prompts and see the AI's responses.
+Or compile and run `app.mq5` (in `metatrader-ai/mql`) to get an on-chart chat panel where you can type prompts and see AI responses.
 
 
 ## Notes
