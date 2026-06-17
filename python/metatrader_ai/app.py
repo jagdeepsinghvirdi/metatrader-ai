@@ -9,6 +9,7 @@ from typing import Optional
 import customtkinter as ctk
 
 from .agent import Agent
+from .llm import DEEPSEEK
 
 # Color palette
 COLOR_BG = "#1E1E1E"
@@ -409,8 +410,26 @@ def launch(
     title: str = "MetaTrader-AI",
     width: int = 520,
     height: int = 700,
+    *,
+    api_key: Optional[str] = None,
+    account_login: Optional[int] = None,
+    account_password: Optional[str] = None,
+    broker_server_name: Optional[str] = None,
+    model: int = DEEPSEEK,
 ) -> None:
-    """Launch the desktop GUI."""
+    """Launch the desktop GUI.
+
+    Pass a pre-built *agent*, or provide credentials to create one.
+    """
+    if agent is None and api_key and account_login and account_password and broker_server_name:
+        agent = Agent(
+            api_key=api_key,
+            account_login=account_login,
+            account_password=account_password,
+            broker_server_name=broker_server_name,
+            model=model,
+        )
+
     ctk.set_appearance_mode("Dark")
     ctk.set_default_color_theme("dark-blue")
     app = App(agent=agent, title=title, width=width, height=height)
