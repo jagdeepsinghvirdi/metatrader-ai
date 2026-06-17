@@ -25,7 +25,7 @@ An AI-powered trading assistant for MetaTrader 4 and MetaTrader 5! Now you can u
 - Windows operating system (for Python integration, MQL works on all platforms that MetaTrader supports)
 - MetaTrader 5 and Python 3.9.7 or higher for Python integration
 - MetaTrader 4 or MetaTrader 5 for MQL integration
-- OpenAI API key
+- OpenAI or DeepSeek API key
 
 ## Installation
 
@@ -47,21 +47,6 @@ cd Include
 ```bash
 git clone https://github.com/jblanked/metatrader-ai.git
 ```
-3. Create `secrets.mqh`:
-
-**Windows:**
-```
-ni secrets.mqh
-```
-**Mac/Linux:**
-```bash
-touch secrets.mqh
-```
-
-Add your OpenAI API key to `secrets.mqh`:
-```c++
-#define OPENAI_API_KEY "your_openai_api_key"
-```
 
 ## Usage
 
@@ -69,9 +54,29 @@ Add your OpenAI API key to `secrets.mqh`:
 
 ```python
 from metatrader_ai.app import launch
+from metatrader_ai.llm import DEEPSEEK  # or OPENAI
+
+launch(
+    api_key="...",
+    account_login=...,
+    account_password="...",
+    broker_server_name="...",
+    model=DEEPSEEK,  # default; use OPENAI for OpenAI
+)
+```
+
+Or pass a pre-built agent:
+
+```python
+from metatrader_ai.app import launch
 from metatrader_ai.agent import Agent
 
-agent = Agent(API_KEY, ACCOUNT_LOGIN, ACCOUNT_PASS, BROKER_NAME)
+agent = Agent(
+    api_key="...",
+    account_login=...,
+    account_password="...",
+    broker_server_name="...",
+)
 launch(agent=agent)
 ```
 
@@ -103,7 +108,12 @@ result = run(
 ```python
 from metatrader_ai.agent import Agent
 
-agent = Agent(API_KEY, ACCOUNT_LOGIN, ACCOUNT_PASS, BROKER_NAME)
+agent = Agent(
+    api_key="...",
+    account_login=...,
+    account_password="...",
+    broker_server_name="...",
+)
 response = agent.run("What is the daily high of ETHUSD?")
 print(response)
 ```
@@ -112,11 +122,14 @@ print(response)
 
 ```bash
 metatrader-ai \
-   --api-key "$OPENAI_API_KEY" \
+   --api-key "$DEEPSEEK_API_KEY" \
    --account-login "$ACCOUNT_LOGIN" \
    --account-pass "$ACCOUNT_PASS" \
-   --broker-name "$BROKER_NAME"
+   --broker-name "$BROKER_NAME" \
+   --provider deepseek
 ```
+
+Use `--provider openai` (with `OPENAI_API_KEY`) to switch to OpenAI.
 
 Single prompt mode:
 
@@ -131,20 +144,26 @@ metatrader-ai --prompt "Show account info" ...
 
 void OnStart()
 {
-   Agent *agent = new Agent();
+   Agent *agent = new Agent(
+      "your-api-key",               // API key
+      LLM_PROVIDER_DEEPSEEK,        // provider (default)
+      DEEPSEEK_MODEL_V4_FLASH       // model (default)
+   );
    string response = agent.run("What is the daily high of ETHUSD?");
    Print("[Agent] ", response);
    delete agent;
 }
 ```
 
-Or compile and run `app.mq5` (in `metatrader-ai/mql`) to get an on-chart chat panel where you can type prompts and see AI responses.
+Use `LLM_PROVIDER_OPENAI` with an OpenAI model (e.g. `OPENAI_MODEL_GPT_5_4_MINI`) to switch providers.
+
+Or compile and run `app.mq5` (in `metatrader-ai/mql`) to get an on-chart chat panel with provider/model inputs where you can type prompts and see AI responses.
 
 
 ## Notes
 -  I am available for hire to integrate your strategy into the system, with advanced prompts and multi layer thinking: https://www.jblanked.com/coding-request/
-- I configured this with one of the cheapest models, gpt-5-nano, which is $0.05 for 1 million tokens. You can use a smarter model, and optionally switch to claude, but for basic trading logic, the nano is sufficient and very cost effective (roughly $0.05 per 50 requests)
-- The python environment works best directly inside of MetaTrader5, but if you run it from a Windows/Linux Terminal, you should open up MetaTrader5 and log in to your account first, then run the python script for the best experience. The script attempts to open and login to MetaTrader5 if it is not already open.
+- In the Python environment, two LLM providers are supported: DeepSeek (`deepseek-v4-flash`, default) and OpenAI (`gpt-5.4-mini`). Switch with `--provider` in the CLI or `model=OPENAI` / `model=DEEPSEEK` (from `metatrader_ai.llm`) in code. In MQL, switch providers and models with the `providerId` and `providerModel` parameters when creating the Agent (e.g. `LLM_PROVIDER_OPENAI` with `OPENAI_MODEL_GPT_5_4_MINI`).
+- The python environment works best directly inside of MetaTrader5, but if you run it from a Windows terminal, you should open up MetaTrader5 and log in to your account first, then run the python script for the best experience. The script attempts to open and login to MetaTrader5 if it is not already open.
 
 ## Disclaimer
 Trading and investing involve substantial risk. Past performance is not indicative of future results. This software is provided for educational and informational purposes only and should not be considered as financial advice. Always do your own research and consult with a qualified financial advisor before making any trading decisions. JBlanked and the developers of this software are not responsible for any losses or damages that may occur from using this software.

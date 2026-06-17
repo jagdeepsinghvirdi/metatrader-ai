@@ -2,6 +2,12 @@ import argparse
 import os
 
 from .agent import Agent
+from .llm import DEEPSEEK, OPENAI
+
+PROVIDER_MAP = {
+    "openai": OPENAI,
+    "deepseek": DEEPSEEK,
+}
 
 
 def _env_first(*names: str):
@@ -14,7 +20,9 @@ def _env_first(*names: str):
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="MetaTrader AI command line client")
-    parser.add_argument("--api-key", default=_env_first("OPENAI_API_KEY"))
+    parser.add_argument(
+        "--api-key", default=_env_first("DEEPSEEK_API_KEY", "OPENAI_API_KEY")
+    )
     parser.add_argument(
         "--account-login",
         type=int,
@@ -29,9 +37,10 @@ def build_parser() -> argparse.ArgumentParser:
         default=_env_first("BROKER_NAME", "BROKER_SERVER_NAME"),
     )
     parser.add_argument(
-        "--model",
-        default="gpt-5-nano",
-        help="Model name to use for chat completions.",
+        "--provider",
+        default="deepseek",
+        choices=["openai", "deepseek"],
+        help="LLM provider to use (openai or deepseek).",
     )
     parser.add_argument(
         "--prompt",
@@ -65,7 +74,7 @@ def main() -> int:
         account_login=int(args.account_login),
         account_password=args.account_pass,
         broker_server_name=args.broker_name,
-        model=args.model,
+        model=PROVIDER_MAP[args.provider],
     )
 
     if args.prompt:

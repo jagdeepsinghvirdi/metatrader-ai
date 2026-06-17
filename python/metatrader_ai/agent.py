@@ -5,11 +5,10 @@ from typing import Optional
 import requests
 
 from .tools import dispatch, mt5
+from .llm import DEEPSEEK, LLM
 
 BASE_DIR = Path(__file__).resolve().parent
 
-DEFAULT_MODEL = "gpt-5-nano"
-URL = "https://api.openai.com/v1/chat/completions"
 CONTEXT_FILES = [
     "context/python.md",
     "context/trade.md",
@@ -22,13 +21,16 @@ class Agent:
 
     def __init__(
         self,
-        api_key: str,
         account_login: int,
         account_password: str,
         broker_server_name: str,
-        model: str = DEFAULT_MODEL,
+        api_key: str,
+        model: int = DEEPSEEK,
     ):
-        self.model = model
+        if not api_key or len(api_key) < 3:
+            raise ValueError("No API key set.")
+        
+        self.llm = LLM( model)
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -81,14 +83,14 @@ class Agent:
         try:
             while True:
                 payload: dict = {
-                    "model": self.model,
+                    "model": self.llm.model,
                     "messages": self.messages,
                     "tools": tools,
                     "tool_choice": "auto",
                 }
 
                 response = requests.post(
-                    URL, headers=self.headers, json=payload, timeout=60
+                    self.llm.url, headers=self.headers, json=payload, timeout=60
                 )
 
                 if not response.ok:
@@ -159,12 +161,12 @@ class Agent:
 
 
 def run(
-    api_key: str,
     account_login: int,
     account_password: str,
     broker_server_name: str,
+    api_key: str,
+    model: int = DEEPSEEK,
     prompt: Optional[str] = None,
-    model: str = DEFAULT_MODEL,
 ) -> Optional[str]:
     """Convenience API.
 

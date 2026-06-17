@@ -5,20 +5,22 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2026,JBlanked LLC"
 #property link      "https://www.jblanked.com"
-#property version   "1.00"
+#property version   "1.02"
 #property strict
 
 #include "agent.mqh"
 #include "tools/Panel-Draw.mqh"
 
-input string inpApiKey = "sk--";
+input string inpApiKey                     = "sk--";                                 // Your API Key
+input ENUM_LLM_PROVIDER inpProvider        = LLM_PROVIDER_DEEPSEEK;                  // LLM Provider
+input ENUM_DEEPSEEK_MODEL inpDeepSeekModel = DEEPSEEK_MODEL_V4_FLASH;                // DeepSeek Model
+input ENUM_OPENAI_MODEL inpOpenAIModel     = OPENAI_MODEL_GPT_5_4_NANO;              // OpenAI Model
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   OPENAI_API_KEY = inpApiKey;
-   agent = new Agent();
+   agent = new Agent(inpApiKey, inpProvider, inpProvider == LLM_PROVIDER_OPENAI ? inpOpenAIModel : inpDeepSeekModel);
 
    int panelW = (int)(ChartGetInteger(0, CHART_WIDTH_IN_PIXELS) / 2.5);
    int panelH = (int)ChartGetInteger(0, CHART_HEIGHT_IN_PIXELS) - 40;

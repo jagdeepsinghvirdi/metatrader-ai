@@ -7,17 +7,10 @@
 #property link      "https://www.jblanked.com/"
 #property strict
 
+#include "llm.mqh"
 #include "tools/mt5.mqh"
 #include "tools/dispatch.mqh"
 #include "tools/requests.mqh"
-
-#ifndef OPENAI_API_KEY
-#include "secrets.mqh"
-#endif
-
-#define MODEL "gpt-5-nano"
-#define URL   "https://api.openai.com/v1/chat/completions"
-#define ROOT_URL "https://api.openai.com/"
 
 const string CONTEXT_FILES[] =
 {
@@ -46,7 +39,7 @@ int ShellExecuteW(int hWnd, string lpOperation, string lpFile, string lpParamete
 class Agent
 {
 public:
-   Agent();                   // Constructor
+   Agent(string apiKey, const ENUM_LLM_PROVIDER providerId = LLM_PROVIDER_DEEPSEEK, const int providerModel = DEEPSEEK_MODEL_V4_FLASH);  // Constructor
    ~Agent();                  // Deconstructor
    void reset();              // Clear conversation history while preserving the system message
    string run(string prompt); // Process one user turn and return the assistant's final text response
@@ -57,6 +50,8 @@ private:
    string    m_headers;         // Content-Type + Authorization headers
    bool      m_initialized;     // is initialized
    string    m_deferredImageMsg;// user-role image message deferred until after all tool results
+   LLM       m_llm;             // LLM configuration
+   string    m_apiKey;          // API key
 
    string loadContextFiles();                                   // Read and concatenate all CONTEXT_FILES
    bool initialize();                                           // Load system prompt and context files
@@ -70,12 +65,14 @@ private:
 //+------------------------------------------------------------------+
 //| Constructor                                                      |
 //+------------------------------------------------------------------+
-Agent::Agent()
+Agent::Agent(string apiKey, const ENUM_LLM_PROVIDER providerId, const int providerModel)
 {
    m_messages.m_type = jtARRAY;
    m_dispatch        = new Dispatch();
+   m_llm             = LLM(providerId, providerModel);
+   m_apiKey          = apiKey;
    m_initialized     = initialize();
-   m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + OPENAI_API_KEY;
+   m_headers         = "Content-Type: application/json\r\nAuthorization: Bearer " + m_apiKey;
    m_deferredImageMsg = "";
 #ifdef __MQL4__
    if(!FolderCreate("metatrader-ai", FILE_COMMON)) Print("Failed to create metatrader-ai folder");
@@ -213,12 +210,12 @@ string Agent::run(string prompt)
    while (true)
    {
       CJAVal payload;
-      payload["model"] = MODEL;
+      payload["model"] = m_llm.model;
       payload["tool_choice"] = "auto";
       payload["messages"].Set(m_messages);
       payload["tools"].Set(toolList);
 
-      string jsonString = requestPost(URL, m_headers, payload);
+      string jsonString = requestPost(m_llm.url, m_headers, payload);
       if(jsonString == "")
          return "HTTP request failed.";
 

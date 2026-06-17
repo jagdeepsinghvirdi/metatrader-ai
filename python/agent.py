@@ -1,14 +1,16 @@
 import secrets
 from metatrader_ai.agent import run
+from metatrader_ai.llm import DEEPSEEK
 
 
 def main():
     """Run the program with local secrets.py credentials."""
     run(
-        api_key=secrets.OPENAI_API_KEY,
         account_login=secrets.ACCOUNT_NUMBER,
         account_password=secrets.ACCOUNT_PASSWORD,
         broker_server_name=secrets.BROKER_SERVER_NAME,
+        api_key=secrets.DEEPSEEK_API_KEY,
+        model=DEEPSEEK
     )
 
 
