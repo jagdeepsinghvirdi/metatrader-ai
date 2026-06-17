@@ -20,7 +20,7 @@ input ENUM_OPENAI_MODEL inpOpenAIModel     = OPENAI_MODEL_GPT_5_4_NANO;         
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   agent = new Agent(inpApiKey, inpProvider, inpProvider == LLM_PROVIDER_OPENAI ? inpOpenAIModel : inpDeepSeekModel);
+   agent = new Agent(inpApiKey, inpProvider, inpProvider == LLM_PROVIDER_OPENAI ? (int)inpOpenAIModel : (int)inpDeepSeekModel);
 
    int panelW = (int)(ChartGetInteger(0, CHART_WIDTH_IN_PIXELS) / 2.5);
    int panelH = (int)ChartGetInteger(0, CHART_HEIGHT_IN_PIXELS) - 40;
