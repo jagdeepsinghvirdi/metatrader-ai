@@ -33,7 +33,7 @@ int OnInit()
       return INIT_FAILED;
    }
 
-   Agent *agent = new Agent(inpApiKey, inpProvider, inpProvider == LLM_PROVIDER_OPENAI ? inpOpenAIModel : inpDeepSeekModel);
+   Agent *agent = new Agent(inpApiKey, inpProvider, inpProvider == LLM_PROVIDER_OPENAI ? (int)inpOpenAIModel : (int)inpDeepSeekModel);
 
    const string response = agent.run(inpPrompt);
    Print("[Agent] ", response);
