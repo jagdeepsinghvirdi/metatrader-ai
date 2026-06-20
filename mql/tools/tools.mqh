@@ -6,6 +6,7 @@
 #property copyright "Copyright 2026,JBlanked LLC"
 #property link      "https://www.jblanked.com"
 #property strict
+#include "backtesting.mqh"
 #include "constants.mqh"
 #include "mt5.mqh"
 #include "compile.mqh"
@@ -1024,5 +1025,29 @@ public:
    virtual string execute(CJAVal &json) override
    {
       return removeChartIndicator(json["indicator_name"].ToStr(), (long)json["chart_id"].ToInt(), (int)json["sub_window"].ToInt());
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolBacktestSingle : public Tool
+{
+public:
+   ToolBacktestSingle() : Tool("backtest_single", "Run a single backtest in the strategy tester with the specified inputs and expert parameters.", toolBacktestSingleParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      CJAVal testInputs;
+      testInputs["name"]       = json["name"];
+      testInputs["symbol"]     = json["symbol"];
+      testInputs["timeframe"]  = json["timeframe"];
+      testInputs["to_date"]    = json["to_date"];
+      testInputs["from_date"]  = json["from_date"];
+      testInputs["deposit"]    = json["deposit"];
+
+      CJAVal expertParams;
+      expertParams.Deserialize(json["expert_params"].ToStr());
+
+      return backtestSingle(testInputs, expertParams);
    }
 };

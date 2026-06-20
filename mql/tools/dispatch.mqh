@@ -6,6 +6,7 @@
 #property copyright "Copyright 2026,JBlanked"
 #property link      "https://www.jblanked.com/"
 #property strict
+#include "backtesting.mqh"
 #include "constants.mqh"
 #include "mt5.mqh"
 #include "compile.mqh"
@@ -88,6 +89,7 @@ public:
       add(new ToolRemoveChartIndicator());
 
       add(new ToolCompileMql5());
+      add(new ToolBacktestSingle());
    }
 
    void toolList(CJAVal &json, bool isAnthropic = true)
