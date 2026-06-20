@@ -20,6 +20,13 @@ input ENUM_OPENAI_MODEL inpOpenAIModel     = OPENAI_MODEL_GPT_5_4_NANO;         
 //+------------------------------------------------------------------+
 int OnInit()
 {
+   bool timerSet = EventSetTimer(1);
+   while(!timerSet)
+   {
+      timerSet = EventSetTimer(1);
+      Sleep(1);
+   }
+
    agent = new Agent(inpApiKey, inpProvider, inpProvider == LLM_PROVIDER_OPENAI ? (int)inpOpenAIModel : (int)inpDeepSeekModel);
 
    int panelW = (int)(ChartGetInteger(0, CHART_WIDTH_IN_PIXELS) / 2.5);
@@ -42,6 +49,7 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
 {
+   EventKillTimer();
    panel.Destroy(reason);
    delete panel;
 
@@ -56,9 +64,9 @@ void OnChartEvent(const int id, const long &lparam, const double &dparam, const 
    panel.PanelChartEvent(id, lparam, dparam, sparam);
 }
 //+------------------------------------------------------------------+
-//| Expert tick function                                             |
+//| Expert timer function                                            |
 //+------------------------------------------------------------------+
-void OnTick()
+void OnTimer()
 {
    panel.OnTickUpdate();
 
