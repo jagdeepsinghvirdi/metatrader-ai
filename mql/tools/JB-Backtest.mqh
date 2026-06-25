@@ -390,7 +390,8 @@ string            CBacktest::timeCurrent(void)
 //+------------------------------------------------------------------+
 string            CBacktest::timeframeSuffix(const ENUM_TIMEFRAMES timeframe)
 {
-   const string timeframeEdit = EnumToString(timeframe);
+   const ENUM_TIMEFRAMES tframe = timeframe == PERIOD_CURRENT ? (ENUM_TIMEFRAMES)Period() : timeframe;
+   const string timeframeEdit = EnumToString(tframe);
 // return last 3 characters
    return StringSubstr(timeframeEdit, StringLen(timeframeEdit) - 3, StringLen(timeframeEdit) - 1);
 }
