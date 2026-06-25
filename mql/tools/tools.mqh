@@ -1051,3 +1051,27 @@ public:
       return backtestSingle(testInputs, expertParams);
    }
 };
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolBacktestOptimization : public Tool
+{
+public:
+   ToolBacktestOptimization() : Tool("backtest_optimization", "Run a backtest optimization in the strategy tester with the specified inputs and optimization parameters.", toolBacktestOptimizationParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      CJAVal testInputs;
+      testInputs["name"]       = json["name"];
+      testInputs["symbol"]     = json["symbol"];
+      testInputs["timeframe"]  = json["timeframe"];
+      testInputs["to_date"]    = json["to_date"];
+      testInputs["from_date"]  = json["from_date"];
+      testInputs["deposit"]    = json["deposit"];
+
+      CJAVal optimizationParams;
+      optimizationParams.Deserialize(json["optimization_params"].ToStr());
+
+      return backtestOptimization(testInputs, optimizationParams);
+   }
+};
