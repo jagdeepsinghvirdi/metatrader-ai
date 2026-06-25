@@ -32,6 +32,11 @@ int OnInit()
    int panelW = (int)(ChartGetInteger(0, CHART_WIDTH_IN_PIXELS) / 2.5);
    int panelH = (int)ChartGetInteger(0, CHART_HEIGHT_IN_PIXELS) - 40;
    panel = new AIPanel("MetaTrader-AI", 0, 0, panelW, panelH, 0);
+   if(CheckPointer(panel) != POINTER_DYNAMIC)
+   {
+      delete agent;
+      return INIT_FAILED;
+   }
    panel.SetAgent(agent);
 
    if(!panel.CreatePanel())
@@ -50,8 +55,11 @@ int OnInit()
 void OnDeinit(const int reason)
 {
    EventKillTimer();
-   panel.Destroy(reason);
-   delete panel;
+   if(CheckPointer(panel) == POINTER_DYNAMIC)
+   {
+      panel.Destroy(reason);
+      delete panel;
+   }
 
    if(CheckPointer(agent) == POINTER_DYNAMIC)
       delete agent;
