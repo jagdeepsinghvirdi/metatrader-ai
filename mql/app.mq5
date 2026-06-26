@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2026,JBlanked LLC"
 #property link      "https://www.jblanked.com"
-#property version   "1.02"
+#property version   "1.03"
 #property strict
 
 #include "agent.mqh"
