@@ -44,13 +44,23 @@ string backtestSingle(CJAVal &testInputs, CJAVal &expertParams);
 string backtestOptimization(CJAVal &testInputs, CJAVal &optimizationParams)
 {
    testerInputs inputs;
-   inputs.expertName            = testInputs["name"].ToStr();                       // my-expert.ex5 (expert advisor name)
-   inputs.symbol                = testInputs["symbol"].ToStr();                     // EURUSD.PRO (currency pair)
-   inputs.timeFrame             = (ENUM_TIMEFRAMES)testInputs["timeframe"].ToInt(); // timeframe to test (PERIOD_xxx);
-   inputs.toDate                = (datetime)testInputs["to_date"].ToStr();          // start date
-   inputs.fromDate              = (datetime)testInputs["from_date"].ToStr();        // end date
-   inputs.optimization          = true;                                             // optimization on
-   inputs.deposit               = testInputs["deposit"].ToDbl();                    // starting balance to test
+   inputs.expertName            = testInputs["name"].ToStr(); // expert advisor name
+   inputs.optimization          = true;                       // optimization on
+
+   if(testInputs["symbol"].ToStr() != "")
+      inputs.symbol = testInputs["symbol"].ToStr(); // currency pair
+
+   if(testInputs["timeframe"].ToStr() != "")
+      inputs.timeFrame = (ENUM_TIMEFRAMES)testInputs["timeframe"].ToInt(); // timeframe to test (PERIOD_xxx);
+
+   if(testInputs["to_date"].ToStr() != "")
+      inputs.toDate = (datetime)testInputs["to_date"].ToStr(); // start date
+
+   if(testInputs["from_date"].ToStr() != "")
+      inputs.fromDate = (datetime)testInputs["from_date"].ToStr(); // end date
+   
+   if(testInputs["deposit"].ToStr() != "")
+      inputs.deposit = testInputs["deposit"].ToDbl(); // starting balance to test
 
    CBacktest test(inputs);
    const int listSize = ArraySize(optimizationParams.m_e);
@@ -89,12 +99,22 @@ string backtestOptimization(CJAVal &testInputs, CJAVal &optimizationParams)
 string backtestSingle(CJAVal &testInputs, CJAVal &expertParams)
 {
    testerInputs inputs;
-   inputs.expertName            = testInputs["name"].ToStr();                       // my-expert.ex5 (expert advisor name)
-   inputs.symbol                = testInputs["symbol"].ToStr();                     // EURUSD.PRO (currency pair)
-   inputs.timeFrame             = (ENUM_TIMEFRAMES)testInputs["timeframe"].ToInt(); // timeframe to test (PERIOD_xxx);
-   inputs.toDate                = (datetime)testInputs["to_date"].ToStr();          // start date
-   inputs.fromDate              = (datetime)testInputs["from_date"].ToStr();        // end date
-   inputs.deposit               = testInputs["deposit"].ToDbl();                    // starting balance to test
+   inputs.expertName            = testInputs["name"].ToStr(); // expert advisor name
+
+   if(testInputs["symbol"].ToStr() != "")
+      inputs.symbol = testInputs["symbol"].ToStr(); // currency pair
+
+   if(testInputs["timeframe"].ToStr() != "")
+      inputs.timeFrame = (ENUM_TIMEFRAMES)testInputs["timeframe"].ToInt(); // timeframe to test (PERIOD_xxx);
+
+   if(testInputs["to_date"].ToStr() != "")
+      inputs.toDate = (datetime)testInputs["to_date"].ToStr(); // start date
+
+   if(testInputs["from_date"].ToStr() != "")
+      inputs.fromDate = (datetime)testInputs["from_date"].ToStr(); // end date
+   
+   if(testInputs["deposit"].ToStr() != "")
+      inputs.deposit = testInputs["deposit"].ToDbl(); // starting balance to test              
 
    CBacktest test(inputs);
    const int listSize = ArraySize(expertParams.m_e);

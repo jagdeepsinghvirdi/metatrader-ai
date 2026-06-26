@@ -1102,13 +1102,13 @@ Tool TOOL_COMPILE_MQL5(
 Parameters *toolBacktestSingleParams(void)
 {
    Parameters *p = new Parameters();
-   p.add(new Property("name",           "string",  "The expert advisor name (e.g. MyExpert.ex5)", true));
-   p.add(new Property("symbol",         "string",  "The trading symbol to test (e.g. EURUSD)", true));
-   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
-   p.add(new Property("from_date",      "string",  "Backtest start date", true));
-   p.add(new Property("to_date",        "string",  "Backtest end date", true));
-   p.add(new Property("deposit",        "number",  "Starting deposit amount", true));
-   p.add(new Property("expert_params",  "string",  "JSON array of expert parameter objects with key, value, and type fields (e.g. [{\"key\":\"TakeProfit\",\"value\":\"50\",\"type\":\"int\"}])", true));
+   p.add(new Property("name",           "string",  "The expert advisor name (e.g. Experts\\MyExpert.ex5), must start with 'Experts\\' and end with '.ex5'", true));
+   p.add(new Property("symbol",         "string",  "The trading symbol to test (e.g. EURUSD), default is current symbol", false));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1), default is PERIOD_CURRENT", false));
+   p.add(new Property("from_date",      "string",  "Backtest start date (default is start of current month)", false));
+   p.add(new Property("to_date",        "string",  "Backtest end date (default is current datetime)", false));
+   p.add(new Property("deposit",        "number",  "Starting deposit amount (default is account equity)", false));
+   p.add(new Property("expert_params",  "string",  "JSON array of expert parameter objects with key, value, and type fields (e.g. [{\"key\":\"TakeProfit\",\"value\":\"50\",\"type\":\"int\"}])", false));
    return p;
 }
 //+------------------------------------------------------------------+
@@ -1125,13 +1125,13 @@ Tool TOOL_BACKTEST_SINGLE(
 Parameters *toolBacktestOptimizationParams(void)
 {
    Parameters *p = new Parameters();
-   p.add(new Property("name",           "string",  "The expert advisor name (e.g. MyExpert.ex5)", true));
-   p.add(new Property("symbol",         "string",  "The trading symbol to test (e.g. EURUSD)", true));
-   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1)", true));
-   p.add(new Property("from_date",      "string",  "Backtest start date", true));
-   p.add(new Property("to_date",        "string",  "Backtest end date", true));
-   p.add(new Property("deposit",        "number",  "Starting deposit amount", true));
+   p.add(new Property("name",           "string",  "The expert advisor name (e.g. Experts\\MyExpert.ex5), must start with 'Experts\\' and end with '.ex5'", true));
    p.add(new Property("optimization_params", "string", "JSON array of optimization parameter objects with key, value, start_value, step_value, stop_value, checked (bool), and type fields (e.g. [{\"key\":\"TakeProfit\",\"value\":\"50\",\"start_value\":\"10\",\"step_value\":\"10\",\"stop_value\":\"100\",\"checked\":true,\"type\":\"int\"}])", true));
+   p.add(new Property("symbol",         "string",  "The trading symbol to test (e.g. EURUSD), default is current symbol", false));
+   p.add(new Property("timeframe",      "string",  "The timeframe (e.g. PERIOD_M1, PERIOD_M5, PERIOD_M15, PERIOD_H1, PERIOD_H4, PERIOD_D1), default is PERIOD_CURRENT", false));
+   p.add(new Property("from_date",      "string",  "Backtest start date (default is start of current month)", false));
+   p.add(new Property("to_date",        "string",  "Backtest end date (default is current datetime)", false));
+   p.add(new Property("deposit",        "number",  "Starting deposit amount (default is account equity)", false));
    return p;
 }
 //+------------------------------------------------------------------+
