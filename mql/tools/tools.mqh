@@ -11,6 +11,7 @@
 #include "mt5.mqh"
 #include "compile.mqh"
 #include "tool.mqh"
+#include "context.mqh"
 #include "indicators.mqh"
 #include "file.mqh"
 #include "terminal.mqh"
@@ -1073,5 +1074,18 @@ public:
       optimizationParams.Deserialize(json["optimization_params"].ToStr());
 
       return backtestOptimization(testInputs, optimizationParams);
+   }
+};
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class ToolContextRead : public Tool
+{
+public:
+   ToolContextRead() : Tool("context_read", "Read a context file by path and return its contents", toolContextReadParams()) {}
+   virtual string execute(CJAVal &json) override
+   {
+      return contextRead(json["path"].ToStr());
    }
 };

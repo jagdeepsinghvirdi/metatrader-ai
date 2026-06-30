@@ -1143,3 +1143,20 @@ Tool TOOL_BACKTEST_OPTIMIZATION(
    toolBacktestOptimizationParams()
 );
 //+------------------------------------------------------------------+
+//| Parameters for context_read                                      |
+//+------------------------------------------------------------------+
+Parameters *toolContextReadParams(void)
+{
+   Parameters *p = new Parameters();
+   p.add(new Property("path", "string", "The context file path to read (e.g. 'context\\mql.md', 'context\\builder\\style.md')", true));
+   return p;
+}
+//+------------------------------------------------------------------+
+//| Context read tool                                                |
+//+------------------------------------------------------------------+
+Tool TOOL_CONTEXT_READ(
+   "context_read",
+   "Read a context file by path and return its contents. Supports both embedded resources (MQL5) and file-system reads (MQL4).",
+   toolContextReadParams()
+);
+//+------------------------------------------------------------------+
