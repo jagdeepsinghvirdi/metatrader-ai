@@ -42,7 +42,7 @@ const string BUILDER_FILES[] =
 #resource "\\Include\\metatrader-ai\\context\\builder\\object.md" as string FileBuilderObject
 #resource "\\Include\\metatrader-ai\\context\\builder\\platform.md" as string FileBuilderPlatform
 #resource "\\Include\\metatrader-ai\\context\\builder\\risk-management.md" as string FileBuilderRiskManagement
-#resource "\\Include\\metatrader-ai\\context\\builder\\script.md" as string string FileBuilderScript
+#resource "\\Include\\metatrader-ai\\context\\builder\\script.md" as string FileBuilderScript
 #resource "\\Include\\metatrader-ai\\context\\builder\\strategies.md" as string FileBuilderStrategies
 #resource "\\Include\\metatrader-ai\\context\\builder\\style.md" as string FileBuilderStyle
 #resource "\\Include\\metatrader-ai\\context\\builder\\terminal.md" as string FileBuilderTerminal
