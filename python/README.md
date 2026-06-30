@@ -22,6 +22,7 @@ An AI-powered trading assistant for MetaTrader 4 and MetaTrader 5! Now you can u
 | Chat GUI (desktop or on-chart panel) | ✅ Desktop | ✅ On-chart |
 | Backtesting (single test) | — | ✅ |
 | Backtesting (optimization) | — | ✅ |
+| Create expert advisors, indicators, and scripts | — | ✅ |
 
 ## Requirements
 - Windows operating system (for Python integration, MQL works on all platforms that MetaTrader supports)
