@@ -91,6 +91,7 @@ public:
       add(new ToolCompileMql5());
       add(new ToolBacktestSingle());
       add(new ToolBacktestOptimization());
+      add(new ToolContextRead());
    }
 
    void toolList(CJAVal &json, bool isAnthropic = true)

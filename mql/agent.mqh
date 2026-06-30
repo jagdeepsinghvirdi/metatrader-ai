@@ -11,27 +11,7 @@
 #include "tools/mt5.mqh"
 #include "tools/dispatch.mqh"
 #include "tools/requests.mqh"
-
-const string CONTEXT_FILES[] =
-{
-   "context\\mql.md",
-   "context\\trade.md",
-   "workflows\\response.md",
-};
-
-#ifdef __MQL5__
-#resource "\\Include\\metatrader-ai\\context\\mql.md" as string FileMQL
-#resource "\\Include\\metatrader-ai\\context\\trade.md" as string FileTrade
-#resource "\\Include\\metatrader-ai\\context\\prompt.md" as string FilePrompt
-#resource "\\Include\\metatrader-ai\\workflows\\response.md" as string FileResponse
-#else
-#import "shell32.dll"
-int ShellExecuteW(int hWnd, string lpOperation, string lpFile, string lpParameters, string lpDirectory, int nShowCmd);
-#import
-
-#define FILE_COPY(src, dest) (ShellExecuteW(0, "open", "cmd.exe", ("/C copy /Y \"" + src + "\" \"" + dest + "\""), NULL, 0))
-#define COMMON_FOLDER TerminalInfoString(TERMINAL_COMMONDATA_PATH) + "\\" + "Files" + "\\"
-#endif
+#include "tools/context.mqh"
 
 //+------------------------------------------------------------------+
 //| Agent — wraps multi-turn conversation state and OpenAI API calls |
@@ -55,7 +35,6 @@ private:
 
    string loadContextFiles();                                   // Read and concatenate all CONTEXT_FILES
    bool initialize();                                           // Load system prompt and context files
-   string readFile(string path);                                // Read a text file
    void pushMessage(string role, string content);               // Append a standard role/content message
    void pushRaw(string serialized);                             // Append a pre-serialized JSON object (used for assistant messages with tool_calls)
    void pushToolResult(string toolCallId, string content);      // Append a tool result message
@@ -99,41 +78,13 @@ Agent::~Agent()
 bool Agent::initialize(void)
 {
 #ifdef __MQL5__
-   string systemContent = readFile("context\\prompt.md") + "\nYou are in a MQL5/MetaTrader 5 environment." + loadContextFiles();
+   string systemContent = contextRead("context\\prompt.md") + "\nYou are in a MQL5/MetaTrader 5 environment." + loadContextFiles();
 #else
-   string systemContent = readFile("context\\prompt.md") + "\nYou are in a MQL4/MetaTrader 4 environment." + loadContextFiles();
+   string systemContent = contextRead("context\\prompt.md") + "\nYou are in a MQL4/MetaTrader 4 environment." + loadContextFiles();
 #endif
    if(systemContent == "") return false;
    pushMessage("system", systemContent);
    return true;
-}
-//+------------------------------------------------------------------+
-//| Read a text file                                                 |
-//+------------------------------------------------------------------+
-string Agent::readFile(string path)
-{
-#ifdef __MQL5__
-   if(CONTAINS(path, "mql"))      return FileMQL;
-   if(CONTAINS(path, "trade"))    return FileTrade;
-   if(CONTAINS(path, "prompt"))   return FilePrompt;
-   if(CONTAINS(path, "response")) return FileResponse;
-   return "";
-#else
-   const string ogPath = ::TerminalInfoString(TERMINAL_DATA_PATH) + "\\MQL5\\Include\\metatrader-ai\\" + path;
-   const string commonPath = COMMON_FOLDER + "metatrader-ai\\" + path;
-   FILE_COPY(ogPath, commonPath);
-   int handle = ::FileOpen("metatrader-ai\\" + path, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
-   if (handle == INVALID_HANDLE)
-   {
-      ::Print("[Agent] Error '" + (string)GetLastError() + "', could not open file: " + commonPath);
-      return "";
-   }
-   string content = "";
-   while (!::FileIsEnding(handle))
-      content += ::FileReadString(handle) + "\n";
-   ::FileClose(handle);
-   return content;
-#endif
 }
 
 //+------------------------------------------------------------------+
@@ -144,7 +95,7 @@ string Agent::loadContextFiles()
    string combined = "";
    int n = ArraySize(CONTEXT_FILES);
    for (int i = 0; i < n; i++)
-      combined += "\n\n--- " + CONTEXT_FILES[i] + " ---\n" + readFile(CONTEXT_FILES[i]);
+      combined += "\n\n--- " + CONTEXT_FILES[i] + " ---\n" + contextRead(CONTEXT_FILES[i]);
    return combined;
 }
 
