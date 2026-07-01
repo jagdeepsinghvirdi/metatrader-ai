@@ -179,9 +179,21 @@ string fileWrite(const string path, char &data[], int index = 0, bool overwrite 
       ::FileWriteArray(handle, trimmed);
       ::FileClose(handle);
 
-      const string result = fileCopy(commonTmp, path);
+      fileCopy(commonTmp, path);
+
+      bool copied = false;
+      for(int i = 0; i < 30; i++)
+      {
+         Sleep(100);
+         if(fileExists(path) == "true")
+         {
+            copied = true;
+            break;
+         }
+      }
+
       ::FileDelete(tempRel, FILE_COMMON);
-      return result;
+      return copied ? "true" : "false";
    }
 
    const string fileName   = getFileNameFromPath(path);
