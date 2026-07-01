@@ -147,22 +147,43 @@ string fileRead(const string path)
 string fileWrite(const string path, char &data[], int index = 0, bool overwrite = true)
 {
    const bool exists = fileExists(path) == "true";
+
+   if(!overwrite && exists && index == 0)
+   {
+      FILE_PRINT_RETURN("File already exists and overwrite is set to turned off so no action occurred.");
+   }
+
+   if(!::FolderCreate("metatrader-ai", FILE_COMMON) || !::FolderCreate(FILE_TEMP_FOLDER, FILE_COMMON))
+   {
+      FILE_PRINT_RETURN("Failed to create temporary write folder");
+   }
+
    if(index == 0)
    {
-      if(!overwrite && exists)
+      const string tempName  = "fwrite_" + (string)GetTickCount() + ".tmp";
+      const string tempRel   = FILE_TEMP_FOLDER + "\\" + tempName;
+      const string commonTmp = FILE_COMMON_FOLDER + tempRel;
+
+      ::FileDelete(tempRel, FILE_COMMON);
+
+      int handle = ::FileOpen(tempRel, FILE_WRITE | FILE_COMMON | FILE_BIN);
+      if(handle == INVALID_HANDLE)
       {
-         FILE_PRINT_RETURN("File already exists and overwrite is set to turned off so no action occurred.");
+         FILE_PRINT_RETURN("Failed to create temp file for write! error: " + (string)GetLastError());
       }
-      fileDelete(path);
-      const int result = ShellExecuteW(0, "open", "powershell.exe", ("-Command \"Set-Content -Path '" + path + "' -Value '" + CharArrayToString(data) + "'\""), NULL, 0);
-      if(result <= 32) return FILE_RETURN(result);
-      for(int i = 0; i < 30; i++)
-      {
-         Sleep(100);
-         if(fileExists(path) == "true") break;
-      }
-      return "true";
+
+      const int dataLen = ArraySize(data);
+      char trimmed[];
+      ArrayCopy(trimmed, data, 0, 0, (dataLen > 0 && data[dataLen - 1] == 0) ? dataLen - 1 : dataLen);
+
+      ::FileWriteArray(handle, trimmed);
+      ::FileClose(handle);
+
+      const string result = fileCopy(commonTmp, path);
+      ::FileDelete(tempRel, FILE_COMMON);
+      return result;
    }
+
    const string fileName   = getFileNameFromPath(path);
    const string commonPath = FILE_COMMON_FOLDER + FILE_TEMP_FOLDER + "\\" + fileName;
    if(fileCopy(path, commonPath) != "true")
