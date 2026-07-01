@@ -489,7 +489,8 @@ public:
    {
       string enable = json["enable"].ToStr();
       StringToLower(enable);
-      return BOOL_TO_STRING(selectSymbol(json["symbol"].ToStr(), enable == "true"));
+      bool enableFlag = enable == "true" || enable == "1";
+      return BOOL_TO_STRING(selectSymbol(json["symbol"].ToStr(), enableFlag));
    }
 };
 //+------------------------------------------------------------------+
@@ -951,7 +952,8 @@ public:
       StringToCharArray(content, data);
       string overwrite = json["overwrite"].ToStr();
       StringToLower(overwrite);
-      return fileWrite(json["path"].ToStr(), data, (int)json["index"].ToInt(), overwrite == "true");
+      bool overwriteFlag = overwrite == "true" || overwrite == "1";
+      return fileWrite(json["path"].ToStr(), data, (int)json["index"].ToInt(), overwriteFlag);
    }
 };
 
