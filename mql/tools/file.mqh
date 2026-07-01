@@ -182,7 +182,7 @@ string fileWrite(const string path, char &data[], int index = 0, bool overwrite 
       fileCopy(commonTmp, path);
 
       bool copied = false;
-      for(int i = 0; i < 30; i++)
+      for(int i = 0; i < 100; i++)
       {
          Sleep(100);
          if(fileExists(path) == "true")
@@ -202,7 +202,7 @@ string fileWrite(const string path, char &data[], int index = 0, bool overwrite 
    fileCopy(path, commonPath);
 
    bool copied = false;
-   for(int i = 0; i < 30; i++)
+   for(int i = 0; i < 100; i++)
    {
       Sleep(100);
       if(::FileIsExist(FILE_TEMP_FOLDER + "\\" + fileName, FILE_COMMON))
