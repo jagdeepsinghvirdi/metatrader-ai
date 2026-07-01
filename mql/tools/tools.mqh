@@ -952,7 +952,7 @@ public:
       StringToCharArray(content, data);
       string overwrite = json["overwrite"].ToStr();
       StringToLower(overwrite);
-      bool overwriteFlag = overwrite == "true" || overwrite == "1";
+      bool overwriteFlag = overwrite != "false" && overwrite != "0";
       return fileWrite(json["path"].ToStr(), data, (int)json["index"].ToInt(), overwriteFlag);
    }
 };
