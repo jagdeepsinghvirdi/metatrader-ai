@@ -20,27 +20,15 @@ int ShellExecuteW(int hWnd, string lpOperation, string lpFile, string lpParamete
 #define META_EDITOR TerminalInfoString(TERMINAL_PATH) + "\\metaeditor64.exe"
 #endif
 
-#ifndef COMPILE
-#define COMPILE(params) (ShellExecuteW(0, "open", META_EDITOR, params, "", 1))
-#endif
-
-#ifndef FCOPY
-#define FCOPY(src, dest) (ShellExecuteW(0, "open", "cmd.exe", ("/C copy /Y \"" + src + "\" \"" + dest + "\""), NULL, 0) > 32)
-#endif
-
 //+------------------------------------------------------------------+
 //| Compile an .mq5 expert advisor; provide path, returns log output |
 //+------------------------------------------------------------------+
-string compileMql5(string mq5_path)
+string compileMql5(string mq5_path, uint timeoutMs = 60000)
 {
    const int fileExtensionPosition = StringFind(mq5_path, ".mq5");
    if(fileExtensionPosition < 0) return "[Build Error]: Invalid file type. Expected `.mq5`";
 
    if(!FolderCreate(".compile", FILE_COMMON)) return "[Build Error]: Failed to create log folder";
-
-   const int result = COMPILE("/compile:\"" + mq5_path + "\" /log");
-
-   if(result < 32) return StringFormat("[Build Error]: ShellExecute failed, code (%d)", result);
 
    int slash = -1;
    for(int i = fileExtensionPosition; i >= 0; i--)
@@ -56,33 +44,50 @@ string compileMql5(string mq5_path)
    const string mq5RootPath = StringSubstr(mq5_path, 0, slash + 1);
    const string fileName = StringSubstr(mq5FileName, 0, StringFind(mq5FileName, ".mq5"));
    const string fileLogName = fileName + ".log";
+   const string doneFileName = fileName + ".done";
+
    const string loggerPath = mq5RootPath + fileLogName;
-   const string commonPath = COMMON_FOLDER + ".compile\\" + fileLogName;
+   const string commonLogRel = ".compile\\" + fileLogName;
+   const string commonLogPath = COMMON_FOLDER + commonLogRel;
+   const string commonDoneRel = ".compile\\" + doneFileName;
+   const string commonDonePath = COMMON_FOLDER + commonDoneRel;
 
-   if(!FCOPY(loggerPath, commonPath))
-   {
-      return StringFormat("[Build Error]: Failed to copy log file to common folder: %s", commonPath);
-   }
+   if(::FileIsExist(commonLogRel, FILE_COMMON))  ::FileDelete(commonLogRel, FILE_COMMON);
+   if(::FileIsExist(commonDoneRel, FILE_COMMON)) ::FileDelete(commonDoneRel, FILE_COMMON);
 
-   bool logCopied = false;
-   for(int i = 0; i < 100; i++)
+   const string innerCmd = StringFormat("\"%s\" /compile:\"%s\" /log & copy /Y \"%s\" \"%s\" & echo done> \"%s\"", META_EDITOR, mq5_path, loggerPath, commonLogPath, commonDonePath);
+   const string shellParams = StringFormat("/C \"%s\"", innerCmd);
+
+   const int result = ShellExecuteW(0, "open", "cmd.exe", shellParams, "", 0);
+   if(result < 32) return StringFormat("[Build Error]: ShellExecute failed, code (%d)", result);
+
+   const uint start = GetTickCount();
+   bool done = false;
+   while(GetTickCount() - start < timeoutMs)
    {
-      Sleep(100);
-      if(::FileIsExist(".compile\\" + fileLogName, FILE_COMMON))
+      if(::FileIsExist(commonDoneRel, FILE_COMMON))
       {
-         logCopied = true;
+         done = true;
          break;
       }
+      Sleep(100);
    }
 
-   if(!logCopied) return StringFormat("[Build Error]: Log file not found: %s", commonPath);
+   if(!done) return StringFormat("[Build Error]: Timed out waiting for compile to finish (%d ms): %s", timeoutMs, loggerPath);
 
-   int handle = ::FileOpen(".compile\\" + fileLogName, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
-   if (handle == INVALID_HANDLE) return StringFormat("[Build Error]: Error '%d', could not open file: %s", GetLastError(), commonPath);
+   if(!::FileIsExist(commonLogRel, FILE_COMMON))
+      return StringFormat("[Build Error]: Log file not found after compile: %s", commonLogPath);
+
+   int handle = ::FileOpen(commonLogRel, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
+   if (handle == INVALID_HANDLE) return StringFormat("[Build Error]: Error '%d', could not open file: %s", GetLastError(), commonLogPath);
 
    string content = "";
    while (!::FileIsEnding(handle))
       content += ::FileReadString(handle) + "\n";
    ::FileClose(handle);
+
+   ::FileDelete(commonDoneRel, FILE_COMMON);
+
    return StringLen(content) > 0 ? content : "[Build Error]: Log file is empty";
 }
+//+------------------------------------------------------------------+
