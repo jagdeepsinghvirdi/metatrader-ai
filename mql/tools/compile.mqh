@@ -65,7 +65,7 @@ string compileMql5(string mq5_path)
    }
 
    bool logCopied = false;
-   for(int i = 0; i < 50; i++)
+   for(int i = 0; i < 100; i++)
    {
       Sleep(100);
       if(::FileIsExist(".compile\\" + fileLogName, FILE_COMMON))
