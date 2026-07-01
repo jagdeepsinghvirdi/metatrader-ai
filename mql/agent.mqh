@@ -138,9 +138,16 @@ void Agent::pushToolResult(string toolCallId, string content)
 //+------------------------------------------------------------------+
 void Agent::pushToolResultImage(string toolCallId, string b64data)
 {
-   pushToolResult(toolCallId, "Screenshot captured.");
-   string imgContent = "[{\"type\":\"text\",\"text\":\"Here is the chart screenshot.\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64," + b64data + "\"}}]";
-   m_deferredImageMsg = "{\"role\":\"user\",\"content\":" + imgContent + "}";
+   if(m_llm.id == "openai")
+   {
+      pushToolResult(toolCallId, "Screenshot captured.");
+      string imgContent = "[{\"type\":\"text\",\"text\":\"Here is the chart screenshot.\"},{\"type\":\"image_url\",\"image_url\":{\"url\":\"data:image/png;base64," + b64data + "\"}}]";
+      m_deferredImageMsg = "{\"role\":\"user\",\"content\":" + imgContent + "}";
+   }
+   else
+   {
+      pushToolResult(toolCallId, "Screenshot captured successfully. The chart image data is available but this LLM provider does not support inline image display.");
+   }
 }
 
 //+------------------------------------------------------------------+
