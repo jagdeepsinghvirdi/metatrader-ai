@@ -101,6 +101,8 @@ Only use this structure when generating or editing MQL code for an Expert Adviso
 Rules:
 - Load relevant MetaTrader context to ground the implementation in the provided MetaTrader guidance.
 - Prefer version-specific APIs and event handlers appropriate to the detected MQL version.
+- When using the `file_write` tool, escape quotes in string literals (for the `content` parameter) 
+- Provide full paths (including drive and directories for the `path` parameter) when using any `file_xxx` tool.
 
 ---
 

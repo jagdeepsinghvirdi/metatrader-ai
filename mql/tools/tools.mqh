@@ -943,7 +943,7 @@ public:
 class ToolFileWrite : public Tool
 {
 public:
-   ToolFileWrite() : Tool("file_write", "Write content to a file (escape quotes in content).", toolFileWriteParams()) {}
+   ToolFileWrite() : Tool("file_write", "Write content to a file (must escape quotes (in content parameter) + provide a full path (including drive and directories for the path parameter)).", toolFileWriteParams()) {}
    virtual string execute(CJAVal &json) override
    {
       string content = json["content"].ToStr();
