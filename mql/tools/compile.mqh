@@ -59,15 +59,19 @@ string compileMql5(string mq5_path)
    const string loggerPath = mq5RootPath + fileLogName;
    const string commonPath = COMMON_FOLDER + ".compile\\" + fileLogName;
 
-   if(!FCOPY(loggerPath, commonPath)) return StringFormat("[Build Error]: Failed to copy log from %s to %s", loggerPath, commonPath);
-
+   bool logCopied = false;
    for(int i = 0; i < 50; i++)
    {
       Sleep(100);
-      if(::FileIsExist(".compile\\" + fileLogName, FILE_COMMON)) break;
+      if(::FileIsExist(".compile\\" + fileLogName, FILE_COMMON))
+      {
+         logCopied = true;
+         break;
+      }
+      FCOPY(loggerPath, commonPath);
    }
 
-   if(!::FileIsExist(".compile\\" + fileLogName, FILE_COMMON)) return StringFormat("[Build Error]: Log file not found: %s", commonPath);
+   if(!logCopied) return StringFormat("[Build Error]: Log file not found: %s", commonPath);
 
    int handle = ::FileOpen(".compile\\" + fileLogName, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
    if (handle == INVALID_HANDLE) return StringFormat("[Build Error]: Error '%d', could not open file: %s", GetLastError(), commonPath);
