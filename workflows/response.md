@@ -101,7 +101,7 @@ Only use this structure when generating or editing MQL code for an Expert Adviso
 Rules:
 - Load relevant MetaTrader context to ground the implementation in the provided MetaTrader guidance.
 - Prefer version-specific APIs and event handlers appropriate to the detected MQL version.
-- When using the `file_write` tool, escape quotes in string literals (for the `content` parameter) 
+- When using the `file_write` tool, escape quotes in string literals (for the `content` parameter). For example, use '\"' instead of '"' when you need a double quote (e.g., `file_write(path="C:\\path\\to\\file.mq5", content="Print(\"Hello World\");")`).
 - Provide full paths (including drive and directories for the `path` parameter) when using any `file_xxx` tool.
 
 ---
