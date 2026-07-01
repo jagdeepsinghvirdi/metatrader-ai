@@ -61,6 +61,12 @@ string compileMql5(string mq5_path)
 
    if(!FCOPY(loggerPath, commonPath)) return "[Build Error]: Failed to copy log from " + loggerPath + " to " + commonPath;
 
+   for(int i = 0; i < 30; i++)
+   {
+      Sleep(100);
+      if(::FileIsExist(".compile\\" + fileLogName, FILE_COMMON)) break;
+   }
+
    int handle = ::FileOpen(".compile\\" + fileLogName, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
    if (handle == INVALID_HANDLE) return "[Build Error]: Error '" + (string)GetLastError() + "', could not open file: " + commonPath;
 
