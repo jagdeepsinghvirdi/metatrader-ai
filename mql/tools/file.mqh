@@ -198,15 +198,25 @@ string fileWrite(const string path, char &data[], int index = 0, bool overwrite 
 
    const string fileName   = getFileNameFromPath(path);
    const string commonPath = FILE_COMMON_FOLDER + FILE_TEMP_FOLDER + "\\" + fileName;
-   if(fileCopy(path, commonPath) != "true")
-   {
-      FILE_PRINT_RETURN("Failed to copy file to temp for indexed write.");
-   }
+
+   fileCopy(path, commonPath);
+
+   bool copied = false;
    for(int i = 0; i < 30; i++)
    {
       Sleep(100);
-      if(::FileIsExist(FILE_TEMP_FOLDER + "\\" + fileName, FILE_COMMON)) break;
+      if(::FileIsExist(FILE_TEMP_FOLDER + "\\" + fileName, FILE_COMMON))
+      {
+         copied = true;
+         break;
+      }
    }
+
+   if(!copied)
+   {
+      FILE_PRINT_RETURN("Failed to copy file to temp for indexed write.");
+   }
+
    int handle = ::FileOpen(FILE_TEMP_FOLDER + "\\" + fileName, FILE_READ | FILE_WRITE | FILE_COMMON | FILE_BIN);
    if(handle == INVALID_HANDLE)
    {
