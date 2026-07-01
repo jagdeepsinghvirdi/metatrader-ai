@@ -68,7 +68,7 @@ string base64Encode(const uchar &data[], int length)
       result += (i - 1 < length || i <= length + 1) ? StringSubstr(chars, ((b1 << 2) | (b2 >> 6)) & 0x3F, 1) : "=";
       result += (i <= length) ? StringSubstr(chars, b2 & 0x3F, 1) : "=";
    }
-   return result;
+   return StringLen(result) > 0 ? result : "Failed to encode base64";
 }
 
 //+------------------------------------------------------------------+
@@ -99,8 +99,7 @@ string getBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const datet
    MqlRates rates[];
    if(CopyRates(symbol, timeframe, fromDate, toDate, rates) == -1)
    {
-      Print("Failed to fetch rates for " + symbol);
-      return "";
+      return StringFormat("Failed to fetch rates for %s", symbol);
    }
    for(int i = 0; i < ArraySize(rates); i++)
    {
@@ -121,6 +120,7 @@ string getBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const datet
 string getHistoryPosition(const ulong ticket)
 {
    CJAVal result;
+   bool positionFound = false;
 #ifdef __MQL5__
    if(HistoryDealSelect(ticket))
    {
@@ -138,6 +138,7 @@ string getHistoryPosition(const ulong ticket)
       result["fee"]        = HistoryDealGetDouble(ticket, DEAL_FEE);
       result["symbol"]     = HistoryDealGetString(ticket, DEAL_SYMBOL);
       result["comment"]    = HistoryDealGetString(ticket, DEAL_COMMENT);
+      positionFound        = true;
    }
    else
    {
@@ -157,9 +158,10 @@ string getHistoryPosition(const ulong ticket)
       result["profit"]     = OrderProfit();
       result["symbol"]     = OrderSymbol();
       result["comment"]    = OrderComment();
+      positionFound        = true;
    }
 #endif
-   return result.Serialize();
+   return positionFound ? result.Serialize() : "Position not found.";
 }
 
 //+------------------------------------------------------------------+
@@ -221,7 +223,7 @@ string getHistoryPositions(const string symbol = "", const long magic = 0, const
       }
    }
 #endif
-   return result.Serialize();
+   return count > 0 ? result.Serialize() : "No historical positions found.";
 }
 
 //+------------------------------------------------------------------+
@@ -230,6 +232,7 @@ string getHistoryPositions(const string symbol = "", const long magic = 0, const
 string getOrder(const ulong ticket)
 {
    CJAVal result;
+   bool orderFound = false;
 #ifdef __MQL5__
    if(OrderSelect(ticket))
    {
@@ -244,6 +247,7 @@ string getOrder(const ulong ticket)
       result["price_current"] = OrderGetDouble(ORDER_PRICE_CURRENT);
       result["time_open"]     = TimeToString((datetime)OrderGetInteger(ORDER_TIME_SETUP));
       result["time_expire"]   = TimeToString((datetime)OrderGetInteger(ORDER_TIME_EXPIRATION));
+      orderFound              = true;
    }
 #else
    if(OrderSelect((int)ticket, SELECT_BY_TICKET)) // select the order
@@ -259,9 +263,10 @@ string getOrder(const ulong ticket)
       result["price_current"] = OrderClosePrice();
       result["time_open"]     = TimeToString((datetime)OrderOpenTime());
       result["time_expire"]   = TimeToString((datetime)OrderExpiration());
+      orderFound              = true;
    }
 #endif
-   return result.Serialize();
+   return orderFound ? result.Serialize() : "Order not found.";
 }
 
 //+------------------------------------------------------------------+
@@ -314,7 +319,7 @@ string getOrders(const string symbol = "")
       count++;
    }
 #endif
-   return result.Serialize();
+   return count > 0 ? result.Serialize() : "No open orders found.";
 }
 //+------------------------------------------------------------------+
 //| Get the pip value for a specific symbol                          |
@@ -356,6 +361,7 @@ double getPipValue(const string symbol)
 string getPosition(const ulong ticket)
 {
    CJAVal result;
+   bool positionFound = false;
 #ifdef __MQL5__
    if(mt5Posi.SelectByTicket(ticket)) // select the order
    {
@@ -369,6 +375,7 @@ string getPosition(const ulong ticket)
       result["price_open"]    = mt5Posi.PriceOpen();
       result["price_current"] = mt5Posi.PriceCurrent();
       result["time_open"]     = TimeToString(mt5Posi.Time());
+      positionFound           = true;
    }
 #else
    if(OrderSelect((int)ticket, SELECT_BY_TICKET)) // select the order
@@ -383,9 +390,10 @@ string getPosition(const ulong ticket)
       result["price_open"]    = OrderOpenPrice();
       result["price_current"] = OrderClosePrice();
       result["time_open"]     = TimeToString((datetime)OrderOpenTime());
+      positionFound           = true;
    }
 #endif
-   return result.Serialize();
+   return positionFound ? result.Serialize() : "Position not found.";
 }
 
 //+------------------------------------------------------------------+
@@ -437,7 +445,7 @@ string getPositions(const string symbol = "")
       count++;
    }
 #endif
-   return result.Serialize();
+   return count > 0 ? result.Serialize() : "No open positions found";
 }
 
 //+------------------------------------------------------------------+
@@ -449,8 +457,7 @@ string getRecentBars(const string symbol, const ENUM_TIMEFRAMES timeframe, const
    MqlRates rates[];
    if(CopyRates(symbol, timeframe, shift, numberOfBars, rates) == -1)
    {
-      Print("Failed to fetch rates for " + symbol);
-      return "";
+      return StringFormat("Failed to fetch rates for %s", symbol);
    }
    for(int i = 0; i < ArraySize(rates); i++)
    {
@@ -516,16 +523,14 @@ string getScreenshot(const string symbol = "", const ENUM_TIMEFRAMES timeframe =
    {
       if(!ChartSetSymbolPeriod(ChartID(), symbol, timeframe))
       {
-         PrintFormat("getScreenshot(%s,%d) failed to set symbol/period. Error %d", symbol, timeframe, GetLastError());
-         return "";
+         return StringFormat("getScreenshot(%s,%d) failed to set symbol/period. Error %d", symbol, timeframe, GetLastError());
       }
    }
 // take screenshot
    const string currencyPair = symbol != "" ? symbol : _Symbol;
    if(!ChartScreenShot(ChartID(), SCREENSHOT_FILENAME + " " + currencyPair + ".png", SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH))
    {
-      PrintFormat("getScreenshot(%s,%d) failed to screenshot. Error %d", currencyPair, timeframe, GetLastError());
-      return "";
+      return StringFormat("getScreenshot(%s,%d) failed to screenshot. Error %d", currencyPair, timeframe, GetLastError());
    }
 // load screenshot into array
    int res;
@@ -533,16 +538,14 @@ string getScreenshot(const string symbol = "", const ENUM_TIMEFRAMES timeframe =
    res = FileOpen(SCREENSHOT_FILENAME + " " + currencyPair + ".png", FILE_READ | FILE_BIN);
    if(res == INVALID_HANDLE)
    {
-      PrintFormat("getScreenshot(%s,%d) failed to open screenshot file. Error %d", currencyPair, timeframe, GetLastError());
-      return "";
+      return StringFormat("getScreenshot(%s,%d) failed to open screenshot file. Error %d", currencyPair, timeframe, GetLastError());
    }
 
    ulong fileSize = FileSize(res);
    if(FileReadArray(res, file, 0, (int)fileSize) != fileSize)
    {
       FileClose(res);
-      PrintFormat("getScreenshot(%s,%d) failed to read screenshot file. Error %d", currencyPair, timeframe, GetLastError());
-      return "";
+      return StringFormat("getScreenshot(%s,%d) failed to read screenshot file. Error %d", currencyPair, timeframe, GetLastError());
    }
    FileClose(res);
    return base64Encode(file, (int)fileSize);
@@ -791,6 +794,4 @@ bool selectSymbol(const string symbol, const bool enable = true)
 {
    return SymbolSelect(symbol, enable);
 }
-//+------------------------------------------------------------------+
-
 //+------------------------------------------------------------------+
