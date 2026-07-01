@@ -16,7 +16,6 @@ int ShellExecuteW(int hWnd, string lpOperation, string lpFile, string lpParamete
 #define FILE_COMMON_FOLDER TerminalInfoString(TERMINAL_COMMONDATA_PATH) + "\\" + "Files" + "\\"
 #define FILE_PRINT_RETURN(msg) do { Print(msg); return msg; } while(0)
 #define FILE_RETURN(res) (res > 32 ? "true" : "false")
-#define FILE_SUCCESS(res) (res == "true")
 #define FILE_TEMP_FOLDER "metatrader-ai\\temp"
 
 
