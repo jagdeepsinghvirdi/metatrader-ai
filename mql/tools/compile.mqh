@@ -40,7 +40,7 @@ string compileMql5(string mq5_path)
 
    const int result = COMPILE("/compile:\"" + mq5_path + "\" /log");
 
-   if(result < 32) return "[Build Error]: ShellExecute failed, code (" + (string)result + ")";
+   if(result < 32) return StringFormat("[Build Error]: ShellExecute failed, code (%d)", result);
 
    int slash = -1;
    for(int i = fileExtensionPosition; i >= 0; i--)
@@ -59,7 +59,7 @@ string compileMql5(string mq5_path)
    const string loggerPath = mq5RootPath + fileLogName;
    const string commonPath = COMMON_FOLDER + ".compile\\" + fileLogName;
 
-   if(!FCOPY(loggerPath, commonPath)) return "[Build Error]: Failed to copy log from " + loggerPath + " to " + commonPath;
+   if(!FCOPY(loggerPath, commonPath)) return StringFormat("[Build Error]: Failed to copy log from %s to %s", loggerPath, commonPath);
 
    for(int i = 0; i < 30; i++)
    {
@@ -68,7 +68,7 @@ string compileMql5(string mq5_path)
    }
 
    int handle = ::FileOpen(".compile\\" + fileLogName, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
-   if (handle == INVALID_HANDLE) return "[Build Error]: Error '" + (string)GetLastError() + "', could not open file: " + commonPath;
+   if (handle == INVALID_HANDLE) return StringFormat("[Build Error]: Error '%d', could not open file: %s", GetLastError(), commonPath);
 
    string content = "";
    while (!::FileIsEnding(handle))
