@@ -941,7 +941,7 @@ public:
 class ToolFileWrite : public Tool
 {
 public:
-   ToolFileWrite() : Tool("file_write", "Write content to a file.", toolFileWriteParams()) {}
+   ToolFileWrite() : Tool("file_write", "Write content to a file (escape quotes in content).", toolFileWriteParams()) {}
    virtual string execute(CJAVal &json) override
    {
       string content = json["content"].ToStr();

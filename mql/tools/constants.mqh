@@ -962,7 +962,7 @@ Parameters *toolFileWriteParams(void)
 {
    Parameters *p = new Parameters();
    p.add(new Property("path",      "string",  "File path to write to", true));
-   p.add(new Property("content",   "string",  "Content to write to the file", true));
+   p.add(new Property("content",   "string",  "Content to write to the file. Must escape quotes", true));
    p.add(new Property("index",     "integer", "Byte offset to start writing (optional, default 0)"));
    p.add(new Property("overwrite", "boolean", "Whether to overwrite if file exists (optional, default true)"));
    return p;
