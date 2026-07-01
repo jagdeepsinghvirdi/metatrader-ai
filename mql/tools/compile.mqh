@@ -59,6 +59,11 @@ string compileMql5(string mq5_path)
    const string loggerPath = mq5RootPath + fileLogName;
    const string commonPath = COMMON_FOLDER + ".compile\\" + fileLogName;
 
+   if(!FCOPY(loggerPath, commonPath))
+   {
+      return StringFormat("[Build Error]: Failed to copy log file to common folder: %s", commonPath);
+   }
+
    bool logCopied = false;
    for(int i = 0; i < 50; i++)
    {
@@ -68,7 +73,6 @@ string compileMql5(string mq5_path)
          logCopied = true;
          break;
       }
-      FCOPY(loggerPath, commonPath);
    }
 
    if(!logCopied) return StringFormat("[Build Error]: Log file not found: %s", commonPath);
@@ -80,5 +84,5 @@ string compileMql5(string mq5_path)
    while (!::FileIsEnding(handle))
       content += ::FileReadString(handle) + "\n";
    ::FileClose(handle);
-   return content;
+   return StringLen(content) > 0 ? content : "[Build Error]: Log file is empty";
 }
