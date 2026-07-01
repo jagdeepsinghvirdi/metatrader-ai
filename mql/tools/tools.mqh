@@ -487,7 +487,9 @@ public:
    ToolSelectSymbol() : Tool("select_symbol", "Enable or disable a symbol in the Market Watch.", toolSelectSymbolParams()) {}
    virtual string execute(CJAVal &json) override
    {
-      return BOOL_TO_STRING(selectSymbol(json["symbol"].ToStr(), (bool)json["enable"].ToInt()));
+      string enable = json["enable"].ToStr();
+      StringToLower(enable);
+      return BOOL_TO_STRING(selectSymbol(json["symbol"].ToStr(), enable == "true"));
    }
 };
 //+------------------------------------------------------------------+
@@ -947,7 +949,9 @@ public:
       string content = json["content"].ToStr();
       char data[];
       StringToCharArray(content, data);
-      return fileWrite(json["path"].ToStr(), data, (int)json["index"].ToInt(), (bool)json["overwrite"].ToInt());
+      string overwrite = json["overwrite"].ToStr();
+      StringToLower(overwrite);
+      return fileWrite(json["path"].ToStr(), data, (int)json["index"].ToInt(), overwrite == "true");
    }
 };
 
