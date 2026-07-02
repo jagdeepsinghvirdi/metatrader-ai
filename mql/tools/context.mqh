@@ -79,7 +79,7 @@ string contextRead(string path)
    if(CONTAINS(path, "builder\\terminal")) return FileBuilderTerminal;
    if(CONTAINS(path, "builder\\trade")) return FileBuilderTrade;
    if(CONTAINS(path, "builder\\voice")) return FileBuilderVoice;
-   return "";
+   return StringFormat("Error: Context file not found for path: %s", path);
 #else
    const string ogPath = ::TerminalInfoString(TERMINAL_DATA_PATH) + "\\MQL5\\Include\\metatrader-ai\\" + path;
    const string commonPath = COMMON_FOLDER + "metatrader-ai\\" + path;
@@ -87,8 +87,7 @@ string contextRead(string path)
    int handle = ::FileOpen("metatrader-ai\\" + path, FILE_READ | FILE_COMMON | FILE_TXT | FILE_ANSI);
    if (handle == INVALID_HANDLE)
    {
-      ::Print("[Agent] Error '" + (string)GetLastError() + "', could not open file: " + commonPath);
-      return "";
+      return StringFormat("[Agent] Error '%d', could not open file: %s", GetLastError(), commonPath);
    }
    string content = "";
    while (!::FileIsEnding(handle))

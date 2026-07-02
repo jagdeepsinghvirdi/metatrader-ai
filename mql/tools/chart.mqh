@@ -24,11 +24,7 @@ string removeChartIndicator(const string indicatorName, long chartId = 0, int su
 string chartClose(long chartId = 0)
 {
    ResetLastError();
-   if(ChartClose(chartId))
-   {
-      return "Chart closed successfully";
-   }
-   return "Chart failed to close! Error: " + (string)GetLastError();
+   return ChartClose(chartId) ? "Chart closed successfully" : StringFormat("Chart failed to close! Error: %d", GetLastError());
 }
 
 //+------------------------------------------------------------------+
@@ -37,11 +33,7 @@ string chartClose(long chartId = 0)
 string chartOpen(const string symbol, ENUM_TIMEFRAMES timeframe)
 {
    ResetLastError();
-   if(ChartOpen(symbol, timeframe) != 0)
-   {
-      return "Chart opened successfully";
-   }
-   return "Chart failed to open! Error: " + (string)GetLastError();
+   return ChartOpen(symbol, timeframe) != 0 ? "Chart opened successfully" : StringFormat("Chart failed to open! Error: %d", GetLastError());
 }
 
 //+------------------------------------------------------------------+
@@ -105,6 +97,7 @@ string getChartIndicator(const string indicatorName)
    CJAVal result;
    result.m_type = jtARRAY;
    const long chartId = ChartID();
+   bool found = false;
    for(int i = 0; i < (int)ChartGetInteger(chartId, CHART_WINDOWS_TOTAL); i++)
    {
       for(int j = 0; j < ChartIndicatorsTotal(chartId, i); j++)
@@ -117,9 +110,10 @@ string getChartIndicator(const string indicatorName)
          info["handle"] = ChartIndicatorGet(chartId, i, name);
          info["window"] = i;
          result.Add(info);
+         found = true;
       }
    }
-   return result.Serialize();
+   return found ? result.Serialize() : "Indicator not found";
 }
 
 //+------------------------------------------------------------------+
@@ -128,10 +122,6 @@ string getChartIndicator(const string indicatorName)
 string removeChartIndicator(const string indicatorName, long chartId = 0, int subWindow = 0)
 {
    ResetLastError();
-   if(ChartIndicatorDelete(chartId, subWindow, indicatorName))
-   {
-      return "Indicator removed successfully";
-   }
-   return "Failed to remove indicator! Error: " + (string)GetLastError();
+   return ChartIndicatorDelete(chartId, subWindow, indicatorName) ? "Indicator removed successfully" : StringFormat("Failed to remove indicator! Error: %d", GetLastError());
 }
 //+------------------------------------------------------------------+
