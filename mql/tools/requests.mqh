@@ -18,6 +18,10 @@ int  InternetConnectW(int hInternet, string lpszServerName, int nServerPort, str
 int  HttpOpenRequestW(int hConnect, string lpszVerb, string lpszObjectName, string lpszVersion, string lpszReferer, string lplpszAcceptTypes, uint dwFlags, int dwContext);
 #import
 
+#import "kernel32.dll"
+int GetLastError();
+#import
+
 #ifdef __MQL5__
 #define REQUEST_USER_AGENT "MetaTrader 5 Terminal (Wininet)"
 #else
@@ -98,7 +102,7 @@ string readResponse(int hRequest)
       buffer[bytesRead] = 0;
       result += CharArrayToString(buffer, 0, bytesRead, CP_UTF8);
    }
-   return result;
+   return StringLen(result) > 0 ? result : "No response received or failed to read response.";
 }
 
 //+------------------------------------------------------------------+
@@ -113,26 +117,19 @@ string requestGet(const string url, const string headers)
    int hInternet = InternetOpenW(REQUEST_USER_AGENT, 1, NULL, NULL, 0);
    if(!hInternet)
    {
-      Print("requestGet: Failed to initialize WinHTTP");
-      return result;
+      return StringFormat("requestGet: Failed to initialize WinHTTP, Error code: %d", GetLastError());
    }
 
    int hUrl = InternetOpenUrlW(hInternet, url, NULL, 0, 0, 0);
    if(!hUrl)
    {
-      Print("requestGet: Failed to open URL");
       InternetCloseHandle(hInternet);
-      return result;
+      return StringFormat("requestGet: Failed to open URL: %s, Error code: %d", url, GetLastError());
    }
 
    if(HttpSendRequestW(hUrl, headers, StringLen(headers), buffer, 0))
    {
-      uchar recv[1024];
-      while(InternetReadFile(hUrl, recv, ArraySize(recv) - 1, bytesRead) && bytesRead > 0)
-      {
-         recv[bytesRead] = 0;
-         result += CharArrayToString(recv, 0, bytesRead, CP_UTF8);
-      }
+      result = readResponse(hUrl);
    }
 
    InternetCloseHandle(hUrl);
@@ -151,8 +148,7 @@ string requestPost(const string url, const string headers, CJAVal &data)
    int    port;
    if(!parseUrl(url, scheme, host, port, path))
    {
-      Print("requestPost: Invalid URL: ", url);
-      return result;
+      return StringFormat("requestPost: Invalid URL: %s", url);
    }
 
    bool isHttps = (scheme == "https");
@@ -167,35 +163,31 @@ string requestPost(const string url, const string headers, CJAVal &data)
    int hInternet = InternetOpenW(REQUEST_USER_AGENT, 1, NULL, NULL, 0);
    if(!hInternet)
    {
-      Print("requestPost: Failed to initialize WinHTTP");
-      return result;
+      return StringFormat("requestPost: Failed to initialize WinHTTP, Error code: %d", GetLastError());
    }
 
    int hConnect = InternetConnectW(hInternet, host, port, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
    if(!hConnect)
    {
-      Print("requestPost: Failed to connect to host: ", host);
       InternetCloseHandle(hInternet);
-      return result;
+      return StringFormat("requestPost: Failed to connect to host: %s, Error code: %d", host, GetLastError());
    }
 
    string emptyStr = "";
    int hRequest = HttpOpenRequestW(hConnect, "POST", path, "HTTP/1.1", emptyStr, emptyStr, flags, 0);
    if(!hRequest)
    {
-      Print("requestPost: Failed to open HTTP request");
       InternetCloseHandle(hConnect);
       InternetCloseHandle(hInternet);
-      return result;
+      return StringFormat("requestPost: Failed to open HTTP request for path: %s, Error code: %d", path, GetLastError());
    }
 
    if(!HttpSendRequestW(hRequest, headerStr, StringLen(headerStr), bodyBytes, bodyLen))
    {
-      Print("requestPost: HttpSendRequestW failed");
       InternetCloseHandle(hRequest);
       InternetCloseHandle(hConnect);
       InternetCloseHandle(hInternet);
-      return result;
+      return StringFormat("requestPost: Failed to send HTTP request to %s%s, Error code: %d", host, path, GetLastError());
    }
 
    result = readResponse(hRequest);
