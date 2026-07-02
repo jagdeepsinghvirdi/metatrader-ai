@@ -5,25 +5,32 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2026,JBlanked LLC"
 #property link      "https://www.jblanked.com"
-#property version   "1.03"
+#property version   "1.04"
+#property description "MetaTrader-AI: AI trading assistant for MetaTrader 5"
+#property description "Last updated: July 2nd, 2026"
 #property strict
 
 #include "agent.mqh"
 #include "tools/Panel-Draw.mqh"
+#include <VirtualKeys.mqh>
 
-input string inpApiKey                     = "sk--";                                 // Your API Key
-input ENUM_LLM_PROVIDER inpProvider        = LLM_PROVIDER_DEEPSEEK;                  // LLM Provider
-input ENUM_DEEPSEEK_MODEL inpDeepSeekModel = DEEPSEEK_MODEL_V4_FLASH;                // DeepSeek Model
-input ENUM_OPENAI_MODEL inpOpenAIModel     = OPENAI_MODEL_GPT_5_4_NANO;              // OpenAI Model
+input string inpApiKey                     = "sk--";                    // Your API Key
+input ENUM_LLM_PROVIDER inpProvider        = LLM_PROVIDER_DEEPSEEK;     // LLM Provider
+input ENUM_DEEPSEEK_MODEL inpDeepSeekModel = DEEPSEEK_MODEL_V4_FLASH;   // DeepSeek Model
+input ENUM_OPENAI_MODEL inpOpenAIModel     = OPENAI_MODEL_GPT_5_4_NANO; // OpenAI Model
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   bool timerSet = EventSetTimer(1);
+   g_prevQuickNavigation = (ChartGetInteger(0, CHART_QUICK_NAVIGATION) != 0);
+   g_prevQuickNavigationKnown = true;
+   ChartSetInteger(0, CHART_QUICK_NAVIGATION, false);
+
+   bool timerSet = EventSetMillisecondTimer(1);
    while(!timerSet)
    {
-      timerSet = EventSetTimer(1);
+      timerSet = EventSetMillisecondTimer(1);
       Sleep(1);
    }
 
@@ -55,6 +62,10 @@ int OnInit()
 void OnDeinit(const int reason)
 {
    EventKillTimer();
+
+   if(g_prevQuickNavigationKnown)
+      ChartSetInteger(0, CHART_QUICK_NAVIGATION, g_prevQuickNavigation);
+
    if(CheckPointer(panel) == POINTER_DYNAMIC)
    {
       panel.Destroy(reason);
@@ -89,7 +100,7 @@ void OnTimer()
 
 
 //+------------------------------------------------------------------+
-//| Chat message structure                                           |
+//| Chat message struct                                              |
 //+------------------------------------------------------------------+
 struct ChatMessage
 {
@@ -99,40 +110,40 @@ struct ChatMessage
 };
 
 //+------------------------------------------------------------------+
-//| AIPanel — A beautiful two-tab AI chat + info panel               |
+//| AIPanel — AI chat + info panel                                   |
 //+------------------------------------------------------------------+
 class AIPanel : public CPanelDraw
 {
 private:
-   //--- Tab state
+   // Tab state
    bool            m_isChatTab;
    bool            m_initialized;
 
-   //--- Tab buttons
+   // Tab buttons
    CButton         m_btnChat;
    CButton         m_btnInfo;
 
-   //--- Chat components
+   // Chat components
    CLabel          *m_msgLabels[];     // array of message label pointers
    int             m_msgLabelCount;    // number of allocated message labels
    ChatMessage     m_messages[];       // message storage
    int             m_messageCount;     // number of stored messages
    int             m_scrollOffset;     // pixel scroll offset for chat area
 
-   //--- Info tab labels
+   // Info tab labels
    CLabel          *m_infoLabels[];    // info display labels
    int             m_infoLabelCount;   // number of info labels
 
-   //--- Input components
+   // Input components
    CEdit           m_txtInput;
    CButton         m_btnSend;
    CButton         m_btnScrollUp;
    CButton         m_btnScrollDown;
 
-   //--- Agent
+   // Agent
    Agent           *m_agent;
 
-   //--- Layout constants (relative to panel size)
+   // Layout constants
    int             m_tabHeight;
    int             m_inputAreaHeight;
    int             m_margin;
@@ -141,7 +152,7 @@ private:
    int             m_chatBottom;
    int             m_chatHeight;
 
-   //--- Colors
+   // Colors
    color           m_clrBg;
    color           m_clrUserBubble;
    color           m_clrAiBubble;
@@ -156,20 +167,28 @@ private:
    color           m_clrAccent;
    color           m_clrBorder;
 
-   //--- DPI
+   // DPI
    int             m_dpi;
    double          m_dpiScale;
 
-   //--- Internal
+   // Internal
    string          m_panelName;
    int             m_tickCounter;      // tick counter for info refresh
    bool            m_requestPending;   // waiting for AI response
    string          m_pendingMsg;       // last sent message (for display)
+   bool            m_inputFocused;     // true when chat input is focused
+   string          m_inputBuffer;      // buffered input text (can exceed native edit limit)
+   string          m_localClipboard;   // internal clipboard fallback for copy/paste
+   int             m_inputCursorPos;   // insertion point inside input buffer
+   bool            m_shiftDown;        // shift key pressed state
+   bool            m_ctrlDown;         // control key pressed state
+   bool            m_altDown;          // alt/menu key pressed state
+   int             m_inputMaxChars;    // hard cap for user input
    int             m_chatTotalHeight;  // total rendered height of chat messages
    int             m_infoScrollOffset; // scroll offset for info tab
    int             m_infoTotalHeight;  // total content height of info tab
 
-   //--- Private helpers
+   // Private helpers
    void            DestroyMessageLabels();
    void            UpdateChatVisibility(bool show);
    void            UpdateInfoVisibility(bool show);
@@ -179,13 +198,18 @@ private:
    void            ClearInfoLabels();
    void            PopulateInfoTab();
    void            SendCurrentMessage();
+   void            RefreshInputText();
+   void            InsertTextAtCursor(string text);
+   bool            HandleInputKey(const long keyCode);
+   string          KeyCodeToChar(const int keyCode, const bool shiftPressed);
+   void            SetModifierKeyState(const int keyCode, const bool down);
    string          FormatTimestamp();
    int             MaxCharsPerLine();
    void            WrapText(string text, int maxChars, string &lines[], int &lineCount);
    void            AddInfoRow(int &yPos, int col1X, int col1W, int col2X, int col2W, int labelH, bool isHeader, string key, string val);
 
 public:
-   //--- Constructor / Destructor
+   // Constructor / Destructor
    AIPanel(
       const string name,
       const int x1 = 0,
@@ -196,13 +220,13 @@ public:
    );
    ~AIPanel();
 
-   //--- Overrides
+   // Overrides
    bool            CreatePanel();
    virtual bool    OnResize(void);
    void            PanelChartEvent(const int id, const long &lparam, const double &dparam, const string &sparam);
    void            OnTickUpdate();
 
-   //--- Public methods
+   // Public methods
    void            AddMessage(string role, string content);
    void            RefreshInfo();
    void            SetAgent(Agent *ag)
@@ -241,23 +265,31 @@ AIPanel::AIPanel(
    m_agent           = NULL;
    m_requestPending  = false;
    m_pendingMsg      = "";
+   m_inputFocused    = true;
+   m_inputBuffer     = "";
+   m_localClipboard  = "";
+   m_inputCursorPos  = 0;
+   m_shiftDown       = false;
+   m_ctrlDown        = false;
+   m_altDown         = false;
+   m_inputMaxChars   = 1024;
    m_tickCounter     = 0;
    m_chatTotalHeight = 0;
    m_infoScrollOffset = 0;
    m_infoTotalHeight = 0;
 
-//--- DPI scaling
+// DPI scaling
    m_dpi             = (int)TerminalInfoInteger(TERMINAL_SCREEN_DPI);
    if(m_dpi < 96) m_dpi = 96;
    m_dpiScale        = (double)m_dpi / 96.0;
 
-//--- Layout constants (DPI-aware)
+// Layout constants
    m_tabHeight       = (int)(28 * m_dpiScale);
    m_inputAreaHeight = (int)(40 * m_dpiScale);
    m_margin          = (int)(4 * m_dpiScale);
    m_msgSpacing      = (int)(6 * m_dpiScale);
 
-//--- Color scheme (
+// Color scheme
    m_clrBg           = C'30,30,30';        // Dark background
    m_clrUserBubble   = C'10,132,255';      // Blue bubble (user)
    m_clrAiBubble     = C'55,55,60';        // Dark gray bubble (AI)
@@ -284,7 +316,7 @@ AIPanel::~AIPanel()
 }
 
 //+------------------------------------------------------------------+
-//| Destroy all message labels                                       |
+//| Destroy message labels                                           |
 //+------------------------------------------------------------------+
 void AIPanel::DestroyMessageLabels()
 {
@@ -301,7 +333,7 @@ void AIPanel::DestroyMessageLabels()
 }
 
 //+------------------------------------------------------------------+
-//| Clear all info labels                                            |
+//| Clear info labels                                                |
 //+------------------------------------------------------------------+
 void AIPanel::ClearInfoLabels()
 {
@@ -318,11 +350,11 @@ void AIPanel::ClearInfoLabels()
 }
 
 //+------------------------------------------------------------------+
-//| Create the panel and all child controls                          |
+//| Create panel and controls                                        |
 //+------------------------------------------------------------------+
 bool AIPanel::CreatePanel()
 {
-//--- Calculate layout
+// Calculate layout
    int panelW = Width();
    int panelH = Height();
 
@@ -335,7 +367,7 @@ bool AIPanel::CreatePanel()
 
    if(m_chatHeight < (int)(50 * m_dpiScale)) m_chatHeight = (int)(50 * m_dpiScale);
 
-//--- DPI-scaled sizes
+// DPI-scaled sizes
    int tabBtnW    = (int)(80 * m_dpiScale);
    int tabBtnGap  = 2;
    int tabBtnX2   = tabBtnW + tabBtnGap;
@@ -347,7 +379,7 @@ bool AIPanel::CreatePanel()
    int inputFontSz = 11;
    int scrlFontSz = 9;
 
-//--- Create tab buttons
+// Create tab buttons
    m_btnChat.Create(NULL, m_panelName + "_TabChat", 0, 0, 0, tabBtnW, m_tabHeight);
    m_btnChat.Text("Chat");
    m_btnChat.FontSize(tabFontSz);
@@ -364,7 +396,7 @@ bool AIPanel::CreatePanel()
    m_btnInfo.ColorBackground(m_clrTabInactive);
    CDialog::Add(m_btnInfo);
 
-//--- Input area
+// Input area
    int inputY    = panelH - m_inputAreaHeight;
    int sendX     = panelW - sendW - m_margin;
    int inputX    = m_margin;
@@ -375,7 +407,7 @@ bool AIPanel::CreatePanel()
    m_txtInput.Font("Consolas");
    m_txtInput.Color(m_clrAiText);
    m_txtInput.ColorBackground(m_clrInputBg);
-   m_txtInput.ReadOnly(false);
+   m_txtInput.ReadOnly(true);
    m_txtInput.Text("");
    m_txtInput.Alignment(WND_ALIGN_WIDTH, m_margin, 0, sendW + m_margin, 0);
    CDialog::Add(m_txtInput);
@@ -389,7 +421,7 @@ bool AIPanel::CreatePanel()
    m_btnSend.Alignment(WND_ALIGN_RIGHT, 0, 0, m_margin, 0);
    CDialog::Add(m_btnSend);
 
-//--- Scroll buttons
+// Scroll buttons
    int scrollY = m_chatTop + (int)(2 * m_dpiScale);
    int scrollX = panelW - scrlSize - m_margin;
 
@@ -411,7 +443,7 @@ bool AIPanel::CreatePanel()
    m_btnScrollDown.Alignment(WND_ALIGN_RIGHT, 0, 0, m_margin, 0);
    CDialog::Add(m_btnScrollDown);
 
-//--- Run the dialog first (creates the background window)
+// Run dialog
    if(!this.Run())
    {
       Print("Failed to run panel");
@@ -420,7 +452,7 @@ bool AIPanel::CreatePanel()
 
    this.Maximize();
 
-//--- Show initial tab
+// Show initial tab
    SwitchToChat();
 
    m_initialized = true;
@@ -433,6 +465,8 @@ bool AIPanel::CreatePanel()
 void AIPanel::SwitchToChat()
 {
    m_isChatTab = true;
+   m_inputFocused = true;
+   RefreshInputText();
    UpdateChatVisibility(true);
    UpdateInfoVisibility(false);
 
@@ -448,6 +482,8 @@ void AIPanel::SwitchToChat()
 void AIPanel::SwitchToInfo()
 {
    m_isChatTab = false;
+   m_inputFocused = false;
+   RefreshInputText();
    UpdateChatVisibility(false);
    UpdateInfoVisibility(true);
 
@@ -461,7 +497,7 @@ void AIPanel::SwitchToInfo()
 }
 
 //+------------------------------------------------------------------+
-//| Show/hide chat-related controls                                  |
+//| Show/hide chat controls                                          |
 //+------------------------------------------------------------------+
 void AIPanel::UpdateChatVisibility(bool show)
 {
@@ -496,7 +532,7 @@ void AIPanel::UpdateChatVisibility(bool show)
 }
 
 //+------------------------------------------------------------------+
-//| Show/hide info-related controls                                  |
+//| Show/hide info controls                                          |
 //+------------------------------------------------------------------+
 void AIPanel::UpdateInfoVisibility(bool show)
 {
@@ -511,21 +547,335 @@ void AIPanel::UpdateInfoVisibility(bool show)
 }
 
 //+------------------------------------------------------------------+
-//| Max characters per line based on font size, DPI, and panel width |
+//| Refresh input text                                               |
+//+------------------------------------------------------------------+
+void AIPanel::RefreshInputText()
+{
+   int panelW = Width();
+   int sendW = (int)(65 * m_dpiScale);
+   int inputPixelW = panelW - (m_margin * 4) - sendW;
+   if(inputPixelW < (int)(80 * m_dpiScale))
+      inputPixelW = (int)(80 * m_dpiScale);
+
+   double charWidth = (11.0 * m_dpi / 72.0) * 0.60;
+   int VIEW_MAX = MathMax(8, (int)(inputPixelW / charWidth) - 3);
+
+   int len = StringLen(m_inputBuffer);
+
+   if(m_inputCursorPos < 0)
+      m_inputCursorPos = 0;
+   if(m_inputCursorPos > len)
+      m_inputCursorPos = len;
+
+   int start = 0;
+   if(len > VIEW_MAX)
+   {
+      start = m_inputCursorPos - VIEW_MAX / 2;
+      if(start < 0)
+         start = 0;
+      if(start > len - VIEW_MAX)
+         start = len - VIEW_MAX;
+   }
+
+   int viewLen = MathMin(VIEW_MAX, len - start);
+   string view = StringSubstr(m_inputBuffer, start, viewLen);
+   int cursorInView = m_inputCursorPos - start;
+
+   if(cursorInView < 0)
+      cursorInView = 0;
+   if(cursorInView > StringLen(view))
+      cursorInView = StringLen(view);
+
+   string left  = StringSubstr(view, 0, cursorInView);
+   string right = StringSubstr(view, cursorInView);
+   string prefix = (start > 0) ? "<" : "";
+   string suffix = ((start + viewLen) < len) ? ">" : "";
+   string display = prefix + left + "|" + right + suffix;
+
+   m_txtInput.Text(display);
+}
+
+//+------------------------------------------------------------------+
+//| Insert text at cursor                                            |
+//+------------------------------------------------------------------+
+void AIPanel::InsertTextAtCursor(string text)
+{
+   if(StringLen(text) == 0)
+      return;
+
+   int remain = m_inputMaxChars - StringLen(m_inputBuffer);
+   if(remain <= 0)
+      return;
+
+   if(StringLen(text) > remain)
+      text = StringSubstr(text, 0, remain);
+
+   string left = StringSubstr(m_inputBuffer, 0, m_inputCursorPos);
+   string right = StringSubstr(m_inputBuffer, m_inputCursorPos);
+   m_inputBuffer = left + text + right;
+   m_inputCursorPos += StringLen(text);
+}
+
+//+------------------------------------------------------------------+
+//| Convert a key code into a printable character                    |
+//+------------------------------------------------------------------+
+string AIPanel::KeyCodeToChar(const int keyCode, const bool shiftPressed)
+{
+// letters
+   if(keyCode >= 0x41 && keyCode <= 0x5A)
+   {
+      int ch = shiftPressed ? keyCode : keyCode + 32;
+      return CharToString((ushort)ch);
+   }
+
+// top-row digits
+   if(keyCode >= 0x30 && keyCode <= 0x39)
+   {
+      if(!shiftPressed)
+         return CharToString((ushort)keyCode);
+
+      switch(keyCode)
+      {
+      case 0x30:
+         return ")";
+      case 0x31:
+         return "!";
+      case 0x32:
+         return "@";
+      case 0x33:
+         return "#";
+      case 0x34:
+         return "$";
+      case 0x35:
+         return "%";
+      case 0x36:
+         return "^";
+      case 0x37:
+         return "&";
+      case 0x38:
+         return "*";
+      case 0x39:
+         return "(";
+      }
+   }
+
+// numpad digits
+   if(keyCode >= VK_NUMPAD0 && keyCode <= VK_NUMPAD9)
+      return CharToString((ushort)(0x30 + (keyCode - VK_NUMPAD0)));
+
+// punctuation
+   switch(keyCode)
+   {
+   case VK_SPACE:
+      return " ";
+   case VK_DECIMAL:
+      return ".";
+   case VK_ADD:
+      return "+";
+   case VK_SUBTRACT:
+      return "-";
+   case VK_MULTIPLY:
+      return "*";
+   case VK_DIVIDE:
+      return "/";
+   case VK_OEM_1:
+      return shiftPressed ? ":" : ";";
+   case VK_OEM_PLUS:
+      return shiftPressed ? "+" : "=";
+   case VK_OEM_COMMA:
+      return shiftPressed ? "<" : ",";
+   case VK_OEM_MINUS:
+      return shiftPressed ? "_" : "-";
+   case VK_OEM_PERIOD:
+      return shiftPressed ? ">" : ".";
+   case VK_OEM_2:
+      return shiftPressed ? "?" : "/";
+   case VK_OEM_3:
+      return shiftPressed ? "~" : "`";
+   case VK_OEM_4:
+      return shiftPressed ? "{" : "[";
+   case VK_OEM_5:
+      return shiftPressed ? "|" : "\\";
+   case VK_OEM_6:
+      return shiftPressed ? "}" : "]";
+   case VK_OEM_7:
+      return shiftPressed ? "\"" : "'";
+   case VK_TAB:
+      return "   ";
+   }
+
+   return "";
+}
+
+//+------------------------------------------------------------------+
+//| Track modifier keys                                             |
+//+------------------------------------------------------------------+
+void AIPanel::SetModifierKeyState(const int keyCode, const bool down)
+{
+   if(keyCode == VK_SHIFT || keyCode == VK_LSHIFT || keyCode == VK_RSHIFT)
+      m_shiftDown = down;
+   else if(keyCode == VK_CONTROL || keyCode == VK_LCONTROL || keyCode == VK_RCONTROL)
+      m_ctrlDown = down;
+   else if(keyCode == VK_LWIN || keyCode == VK_RWIN)
+      m_ctrlDown = down;
+   else if(keyCode == VK_MENU || keyCode == VK_LMENU || keyCode == VK_RMENU)
+      m_altDown = down;
+}
+
+//+------------------------------------------------------------------+
+//| Handle buffered input                                            |
+//+------------------------------------------------------------------+
+bool AIPanel::HandleInputKey(const long keyCode)
+{
+   int key = (int)keyCode;
+   int len = StringLen(m_inputBuffer);
+   if(m_inputCursorPos < 0)
+      m_inputCursorPos = 0;
+   if(m_inputCursorPos > len)
+      m_inputCursorPos = len;
+
+   if(m_ctrlDown)
+   {
+      if(key == 0x43) // C
+      {
+         m_localClipboard = m_inputBuffer;
+         return true;
+      }
+
+      if(key == 0x58) // X
+      {
+         m_localClipboard = m_inputBuffer;
+         m_inputBuffer = "";
+         m_inputCursorPos = 0;
+         RefreshInputText();
+         return true;
+      }
+
+      if(key == 0x56) // V
+      {
+         string pasted = m_localClipboard;
+         if(StringLen(pasted) > 0)
+         {
+            StringReplace(pasted, "\r", "");
+            StringReplace(pasted, "\n", " ");
+            InsertTextAtCursor(pasted);
+            RefreshInputText();
+         }
+         return true;
+      }
+
+      if(key == 0x41) // A
+      {
+         // Move caret to end
+         m_inputCursorPos = len;
+         RefreshInputText();
+         return true;
+      }
+
+      return true;
+   }
+
+   if(m_altDown)
+      return true;
+
+   if(key == VK_LEFT)
+   {
+      if(m_inputCursorPos > 0)
+      {
+         m_inputCursorPos--;
+         RefreshInputText();
+      }
+      return true;
+   }
+
+   if(key == VK_RIGHT)
+   {
+      if(m_inputCursorPos < len)
+      {
+         m_inputCursorPos++;
+         RefreshInputText();
+      }
+      return true;
+   }
+
+   if(key == VK_HOME)
+   {
+      m_inputCursorPos = 0;
+      RefreshInputText();
+      return true;
+   }
+
+   if(key == VK_END)
+   {
+      m_inputCursorPos = len;
+      RefreshInputText();
+      return true;
+   }
+
+   if(key == VK_RETURN)
+   {
+      SendCurrentMessage();
+      return true;
+   }
+
+   if(key == VK_BACK)
+   {
+      if(m_inputCursorPos > 0 && len > 0)
+      {
+         string left = StringSubstr(m_inputBuffer, 0, m_inputCursorPos - 1);
+         string right = StringSubstr(m_inputBuffer, m_inputCursorPos);
+         m_inputBuffer = left + right;
+         m_inputCursorPos--;
+         RefreshInputText();
+      }
+      return true;
+   }
+
+   if(key == VK_DELETE)
+   {
+      if(m_inputCursorPos < len)
+      {
+         string left = StringSubstr(m_inputBuffer, 0, m_inputCursorPos);
+         string right = StringSubstr(m_inputBuffer, m_inputCursorPos + 1);
+         m_inputBuffer = left + right;
+         RefreshInputText();
+      }
+      return true;
+   }
+
+   if(key == VK_ESCAPE)
+   {
+      m_inputBuffer = "";
+      m_inputCursorPos = 0;
+      RefreshInputText();
+      return true;
+   }
+
+   string ch = KeyCodeToChar(key, m_shiftDown);
+   if(ch == "")
+      return false;
+
+   InsertTextAtCursor(ch);
+   RefreshInputText();
+   return true;
+}
+
+//+------------------------------------------------------------------+
+//| Max chars per line                                               |
 //+------------------------------------------------------------------+
 int AIPanel::MaxCharsPerLine()
 {
    int panelW = Width();
    int pad    = (int)(4 * m_dpiScale);
    int labelW = panelW - (m_margin + pad) * 2;
-// For Consolas 10pt: char height = pts * dpi / 72 (px).
-// Monospace char width ≈ 0.60 × height (slightly conservative).
+// Consolas char width calc
+// Approx char width ratio
    double charWidth = (10.0 * m_dpi / 72.0) * 0.60;
    return MathMax(10, (int)(labelW / charWidth));
 }
 
 //+------------------------------------------------------------------+
-//| Word-wrap a string into an array of lines                        |
+//| Word-wrap text into lines                                        |
 //+------------------------------------------------------------------+
 void AIPanel::WrapText(string text, int maxChars, string &lines[], int &lineCount)
 {
@@ -533,7 +883,7 @@ void AIPanel::WrapText(string text, int maxChars, string &lines[], int &lineCoun
    ArrayResize(lines, 0);
    if(StringLen(text) == 0) return;
 
-// If short enough, keep as single line
+// Keep as single line
    if(StringLen(text) <= maxChars)
    {
       lineCount = 1;
@@ -554,7 +904,7 @@ void AIPanel::WrapText(string text, int maxChars, string &lines[], int &lineCoun
          break;
       }
 
-      // Check for newline within maxChars — forced break
+      // Check for newline break
       int nlPos = -1;
       for(int c = 0; c < maxChars && c < StringLen(remaining); c++)
       {
@@ -568,12 +918,12 @@ void AIPanel::WrapText(string text, int maxChars, string &lines[], int &lineCoun
       int breakPos;
       if(nlPos >= 0)
       {
-         // Newline found — break right before it
+         // Break before newline
          breakPos = nlPos;
       }
       else
       {
-         // Find a good word-break point within maxChars — manual reverse scan
+         // Find word-break point
          breakPos = maxChars;
          for(int c = maxChars - 1; c >= 0; c--)
          {
@@ -585,7 +935,7 @@ void AIPanel::WrapText(string text, int maxChars, string &lines[], int &lineCoun
          }
       }
 
-      // Ensure breakPos >= 1 so we never emit an empty line
+      // Ensure minimum break pos
       if(breakPos < 1)
          breakPos = 1;
 
@@ -599,13 +949,13 @@ void AIPanel::WrapText(string text, int maxChars, string &lines[], int &lineCoun
       }
       else if(nlPos == 0)
       {
-         // Empty line from leading newline — emit a blank line
+         // Emit blank line
          ArrayResize(lines, lineCount + 1);
          lines[lineCount] = "";
          lineCount++;
       }
 
-      // Move past the break point (skip the newline if that's what we broke at)
+      // Skip past break point
       int skip = (nlPos >= 0) ? nlPos + 1 : breakPos;
       remaining = StringSubstr(remaining, skip);
       StringTrimLeft(remaining);
@@ -613,7 +963,7 @@ void AIPanel::WrapText(string text, int maxChars, string &lines[], int &lineCoun
 }
 
 //+------------------------------------------------------------------+
-//| Add a message to the chat                                        |
+//| Add chat message                                                 |
 //+------------------------------------------------------------------+
 void AIPanel::AddMessage(string role, string content)
 {
@@ -624,13 +974,13 @@ void AIPanel::AddMessage(string role, string content)
    m_messages[idx].time    = FormatTimestamp();
    m_messageCount++;
 
-// Calculate total height considering newlines and word wrapping
+// Calculate total height
    int maxChars = MaxCharsPerLine();
    int totalLines = 0;
    for(int m = 0; m < m_messageCount; m++)
    {
       string text = (m_messages[m].role == "user" ? "You: " : "AI: ") + m_messages[m].content;
-      // Split by newlines — each segment is an independent wrapping block
+      // Split by newlines
       string seg = text;
       while(StringLen(seg) > 0)
       {
@@ -646,11 +996,11 @@ void AIPanel::AddMessage(string role, string content)
             segment = seg;
             seg = "";
          }
-         // Lines needed for this segment (word-wrap estimate)
+         // Lines per segment
          int segLen = StringLen(segment);
          if(segLen == 0)
          {
-            totalLines++;  // blank line from consecutive newlines
+            totalLines++;  // Blank line
          }
          else
          {
@@ -669,7 +1019,7 @@ void AIPanel::AddMessage(string role, string content)
 }
 
 //+------------------------------------------------------------------+
-//| Render chat message labels with word wrapping                    |
+//| Render chat messages                                             |
 //+------------------------------------------------------------------+
 void AIPanel::RenderMessages()
 {
@@ -691,7 +1041,7 @@ void AIPanel::RenderMessages()
       string prefix = (m_messages[i].role == "user" ? "You: " : "AI: ");
       string fullText = prefix + m_messages[i].content;
 
-      // Word-wrap this message
+      // Word-wrap message
       string wrapped[];
       int lineCount;
       WrapText(fullText, maxChars, wrapped, lineCount);
@@ -700,7 +1050,7 @@ void AIPanel::RenderMessages()
       {
          int yEnd = yPos + LINE_H;
 
-         // Only create labels whose top edge is within the chat area
+         // Only visible labels
          if(yEnd > m_chatTop && yPos < m_chatBottom)
          {
             int n = m_msgLabelCount;
@@ -744,7 +1094,7 @@ void AIPanel::RenderMessages()
 }
 
 //+------------------------------------------------------------------+
-//| Add a single info row (helper for PopulateInfoTab)               |
+//| Add info row                                                     |
 //+------------------------------------------------------------------+
 void AIPanel::AddInfoRow(int &yPos, int col1X, int col1W, int col2X, int col2W, int labelH, bool isHeader, string key, string val)
 {
@@ -769,8 +1119,8 @@ void AIPanel::AddInfoRow(int &yPos, int col1X, int col1W, int col2X, int col2W, 
    m_infoLabels[n + 1] = new CLabel();
    string valName = m_panelName + "_InfoV" + IntegerToString(n);
    m_infoLabels[n + 1].Create(NULL, valName, 0, col2X, yPos, col2X + col2W, yPos + labelH);
-// Truncate values wider than the label column using character count estimate
-// Approx char width: fontSize_pt * dpi / 72 * 0.60
+// Truncate wide values
+// Char width approx
    double cw = (9.0 * m_dpi / 72.0) * 0.60;
    int maxValChars = (int)((col2W - 4) / cw) - 1; // -1 for "…"
    if(maxValChars > 3 && StringLen(val) > maxValChars)
@@ -787,7 +1137,7 @@ void AIPanel::AddInfoRow(int &yPos, int col1X, int col1W, int col2X, int col2W, 
 }
 
 //+------------------------------------------------------------------+
-//| Populate Info tab with terminal, symbol, and account info        |
+//| Populate Info tab                                                |
 //+------------------------------------------------------------------+
 void AIPanel::PopulateInfoTab()
 {
@@ -804,7 +1154,7 @@ void AIPanel::PopulateInfoTab()
    int infoFontSz = (int)(9 * m_dpiScale);
    int headerFontSz = (int)(11 * m_dpiScale);
 
-//--- Two-pass: first measure total height, then render visible portion
+// Two-pass height calc
    struct InfoRow
    {
       string key;
@@ -948,7 +1298,7 @@ void AIPanel::PopulateInfoTab()
    rows[rowCount].val = AccountInfoInteger(ACCOUNT_TRADE_ALLOWED) ? "Yes" : "No";
    rowCount++;
 
-// --- Pre-calculate total content height ---
+// Total content height
    m_infoTotalHeight = 0;
    for(int r = 0; r < rowCount; r++)
    {
@@ -957,7 +1307,7 @@ void AIPanel::PopulateInfoTab()
          m_infoTotalHeight += sectionGap;
    }
 
-// --- Render visible rows ---
+// Render visible rows
    int yPos = m_chatTop + (int)(4 * m_dpiScale) - m_infoScrollOffset;
 
    for(int r = 0; r < rowCount; r++)
@@ -965,7 +1315,7 @@ void AIPanel::PopulateInfoTab()
       int rowH = rows[r].isHdr ? headerH : labelH;
       int yEnd = yPos + rowH;
 
-      // Only render rows fully visible or partially visible at top/bottom
+      // Only visible rows
       bool partiallyVisible = (yEnd > m_chatTop && yPos < m_chatBottom);
       if(partiallyVisible)
       {
@@ -987,20 +1337,25 @@ void AIPanel::PopulateInfoTab()
 }
 
 //+------------------------------------------------------------------+
-//| Send the current message from input                              |
+//| Send current message                                             |
 //+------------------------------------------------------------------+
 void AIPanel::SendCurrentMessage()
 {
    if(m_requestPending) return;
 
-   string inputText = m_txtInput.Text();
+   string inputText = m_inputBuffer;
+   if(StringLen(inputText) == 0)
+      inputText = m_txtInput.Text();
+
    if(StringLen(inputText) == 0) return;
 
    StringTrimLeft(inputText);
    StringTrimRight(inputText);
    if(StringLen(inputText) == 0) return;
 
-   m_txtInput.Text("");
+   m_inputBuffer = "";
+   m_inputCursorPos = 0;
+   RefreshInputText();
 
    AddMessage("user", inputText);
 
@@ -1013,7 +1368,7 @@ void AIPanel::SendCurrentMessage()
 }
 
 //+------------------------------------------------------------------+
-//| Complete a pending AI request with the actual response           |
+//| Complete AI request                                              |
 //+------------------------------------------------------------------+
 void AIPanel::CompletePending(const string response)
 {
@@ -1031,7 +1386,7 @@ void AIPanel::CompletePending(const string response)
 }
 
 //+------------------------------------------------------------------+
-//| Refresh the info tab data                                        |
+//| Refresh info tab                                                 |
 //+------------------------------------------------------------------+
 void AIPanel::RefreshInfo()
 {
@@ -1040,7 +1395,7 @@ void AIPanel::RefreshInfo()
 }
 
 //+------------------------------------------------------------------+
-//| Format current timestamp as string                               |
+//| Format timestamp                                                 |
 //+------------------------------------------------------------------+
 string AIPanel::FormatTimestamp()
 {
@@ -1050,12 +1405,12 @@ string AIPanel::FormatTimestamp()
 }
 
 //+------------------------------------------------------------------+
-//| Called when the dialog is resized (e.g. chart resize)           |
+//| Dialog resize handler                                            |
 //+------------------------------------------------------------------+
 bool AIPanel::OnResize(void)
 {
    if(!CPanelDraw::OnResize())
-      return(false);
+      return (false);
    int panelW = Width();
    int panelH = Height();
    if(panelW < 200) panelW = 300;
@@ -1065,16 +1420,19 @@ bool AIPanel::OnResize(void)
    m_chatHeight = m_chatBottom - m_chatTop;
    if(m_chatHeight < (int)(50 * m_dpiScale))
       m_chatHeight = (int)(50 * m_dpiScale);
-// Clamp scroll offsets to valid range after resize
+// Clamp scroll offsets
    m_scrollOffset    = MathMax(0, MathMin(m_scrollOffset,    m_chatHeight * 10));
    m_infoScrollOffset = MathMax(0, MathMin(m_infoScrollOffset, m_chatHeight * 10));
-// Re-render current tab content with new dimensions
+// Re-render tab content
    if(m_isChatTab)
       RenderMessages();
    else
       PopulateInfoTab();
+
+   RefreshInputText();
+
    ChartRedraw();
-   return(true);
+   return (true);
 }
 
 //+------------------------------------------------------------------+
@@ -1082,11 +1440,27 @@ bool AIPanel::OnResize(void)
 //+------------------------------------------------------------------+
 void AIPanel::PanelChartEvent(const int id, const long &lparam, const double &dparam, const string &sparam)
 {
+   if(id == CHARTEVENT_KEYDOWN || id == CHARTEVENT_KEYUP)
+   {
+      int key = (int)lparam;
+      SetModifierKeyState(key, id == CHARTEVENT_KEYDOWN);
+
+      if(id == CHARTEVENT_KEYDOWN && m_isChatTab && m_inputFocused)
+         HandleInputKey(lparam);
+
+      return;
+   }
+
    CPanelDraw::PanelChartEvent(id, lparam, dparam, sparam);
 
    if(id == CHARTEVENT_OBJECT_CLICK)
    {
-      if(sparam == m_panelName + "_TabChat")
+      if(sparam == m_panelName + "_Input")
+      {
+         m_inputFocused = true;
+         RefreshInputText();
+      }
+      else if(sparam == m_panelName + "_TabChat")
       {
          if(!m_isChatTab) SwitchToChat();
       }
@@ -1130,7 +1504,7 @@ void AIPanel::PanelChartEvent(const int id, const long &lparam, const double &dp
 }
 
 //+------------------------------------------------------------------+
-//| Called on every tick to refresh dynamic info                     |
+//| Tick update                                                      |
 //+------------------------------------------------------------------+
 void AIPanel::OnTickUpdate()
 {
@@ -1148,6 +1522,8 @@ void AIPanel::OnTickUpdate()
 //+------------------------------------------------------------------+
 //| Global variables                                                 |
 //+------------------------------------------------------------------+
+bool     g_prevQuickNavigation = false;
+bool     g_prevQuickNavigationKnown = false;
 AIPanel  *panel;
 Agent    *agent;
 //+------------------------------------------------------------------+
