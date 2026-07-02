@@ -18,10 +18,6 @@ int  InternetConnectW(int hInternet, string lpszServerName, int nServerPort, str
 int  HttpOpenRequestW(int hConnect, string lpszVerb, string lpszObjectName, string lpszVersion, string lpszReferer, string lplpszAcceptTypes, uint dwFlags, int dwContext);
 #import
 
-#import "kernel32.dll"
-int GetLastError();
-#import
-
 #ifdef __MQL5__
 #define REQUEST_USER_AGENT "MetaTrader 5 Terminal (Wininet)"
 #else
