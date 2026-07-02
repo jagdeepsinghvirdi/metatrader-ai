@@ -69,16 +69,16 @@ string contextRead(string path)
    if(CONTAINS(path, "context\\prompt"))   return FilePrompt;
    if(CONTAINS(path, "context\\response")) return FileResponse;
    //
-   if(CONTAINS(path, "context\\builder\\indicator")) return FileBuilderIndicator;
-   if(CONTAINS(path, "context\\builder\\object")) return FileBuilderObject;
-   if(CONTAINS(path, "context\\builder\\platform")) return FileBuilderPlatform;
-   if(CONTAINS(path, "context\\builder\\risk-management")) return FileBuilderRiskManagement;
-   if(CONTAINS(path, "context\\builder\\script")) return FileBuilderScript;
-   if(CONTAINS(path, "context\\builder\\strategies")) return FileBuilderStrategies;
-   if(CONTAINS(path, "context\\builder\\style")) return FileBuilderStyle;
-   if(CONTAINS(path, "context\\builder\\terminal")) return FileBuilderTerminal;
-   if(CONTAINS(path, "context\\builder\\trade")) return FileBuilderTrade;
-   if(CONTAINS(path, "context\\builder\\voice")) return FileBuilderVoice;
+   if(CONTAINS(path, "builder\\indicator")) return FileBuilderIndicator;
+   if(CONTAINS(path, "builder\\object")) return FileBuilderObject;
+   if(CONTAINS(path, "builder\\platform")) return FileBuilderPlatform;
+   if(CONTAINS(path, "builder\\risk-management")) return FileBuilderRiskManagement;
+   if(CONTAINS(path, "builder\\script")) return FileBuilderScript;
+   if(CONTAINS(path, "builder\\strategies")) return FileBuilderStrategies;
+   if(CONTAINS(path, "builder\\style")) return FileBuilderStyle;
+   if(CONTAINS(path, "builder\\terminal")) return FileBuilderTerminal;
+   if(CONTAINS(path, "builder\\trade")) return FileBuilderTrade;
+   if(CONTAINS(path, "builder\\voice")) return FileBuilderVoice;
    return "";
 #else
    const string ogPath = ::TerminalInfoString(TERMINAL_DATA_PATH) + "\\MQL5\\Include\\metatrader-ai\\" + path;
