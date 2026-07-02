@@ -40,6 +40,9 @@ pip install metatrader-ai
 
 ### MQL
 
+> [!WARNING]
+> If you are not a developer or just want to jump right in, copy the `app.ex5` file from the `mql` folder into your MetaTrader 5 `Experts` folder and run it from the Navigator panel inside of MetaTrader 5. The MQL source code is provided for developers who want to customize the agent or integrate it into their own expert advisors, indicators, or scripts. Read below for instructions on how to set up the MQL source code.
+
 1. Navigate to MetaTrader's data folder (File → Open Data Folder), then:
 ```bash
 cd "C:\Users\YourUsername\AppData\Roaming\MetaQuotes\Terminal\YourTerminalID"
